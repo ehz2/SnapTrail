@@ -1,11 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
+    //firebase
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.snaptrail"
-    compileSdk = 34
+    compileSdk = 35
+
+    buildFeatures {
+        viewBinding = true
+    }
 
     defaultConfig {
         applicationId = "com.example.snaptrail"
@@ -48,7 +55,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.activity)
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1")) //import firebase bom
+    implementation("com.google.firebase:firebase-analytics")
 }
