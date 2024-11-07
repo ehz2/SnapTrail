@@ -1,11 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+//    Google map plugin
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
+
 }
 
 android {
     namespace = "com.example.snaptrail"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.snaptrail"
@@ -48,7 +51,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+//    Google map implementation
+    implementation(libs.play.services.maps)
 }
