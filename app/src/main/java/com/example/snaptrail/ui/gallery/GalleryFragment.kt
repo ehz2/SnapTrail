@@ -6,16 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.findFragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.snaptrail.R
 import com.example.snaptrail.databinding.FragmentGalleryBinding
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.widget.ArrayAdapter
@@ -23,12 +20,11 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity.LOCATION_SERVICE
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
@@ -37,12 +33,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import org.xml.sax.ext.Locator2Impl
 
 class GalleryFragment : Fragment(), OnMapReadyCallback {
 
     private var _binding: FragmentGalleryBinding? = null
     private var userMarkerLocation: Marker? = null
+
     private lateinit var mMap:GoogleMap
     private lateinit var locationManager: LocationManager
     private lateinit var locationRequest:LocationRequest
@@ -108,8 +104,17 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
         var challenge = binding.challenge
         challenge.setOnClickListener(){
             val difficulty = difficulitySpinner.getSelectedItem().toString()
+
+            //Launch New Fragment
+            val challengeFragment = AutoChallengeFragment()
+
+            //Share difficulty
+            val bundle = Bundle()
+            bundle.putString("DifficultyKey",difficulty)
+            challengeFragment.arguments = bundle
+            val navController = findNavController()
+            navController.navigate(R.id.nav_autoChallenge, bundle)
             Toast.makeText(context,"JOIN CHALLENGE WITH DIFFICULTY - ${difficulty}",Toast.LENGTH_SHORT).show()
-            //Start a new fragment or a new activity based on the difficulty selected by user
         }
         return root
     }
@@ -144,7 +149,6 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
             }
         }
-
     }
     private fun checkPermission() {
         if (Build.VERSION.SDK_INT < 23) return

@@ -38,6 +38,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -58,4 +59,8 @@ dependencies {
 
 //    Google map implementation
     implementation(libs.play.services.maps)
+//    Google places implementation
+    val kotlin_version = "1.8.0"
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
+    implementation("com.google.android.libraries.places:places:3.5.0")
 }
