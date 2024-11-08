@@ -18,6 +18,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity.LOCATION_SERVICE
@@ -45,6 +48,7 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
     private lateinit var locationRequest:LocationRequest
     private val PERMISSION_REQUEST_CODE = 0
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     //Use Activity Result Launcher for permission
     private lateinit var requestPermissionLauncher:ActivityResultLauncher<String>
 
@@ -88,6 +92,25 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
         checkPermission()
+
+        //Difficulity
+        var difficulitySpinner:Spinner = binding.difficulty
+
+        ArrayAdapter.createFromResource(
+            requireActivity(),
+            R.array.difficulity,
+            android.R.layout.simple_spinner_item
+        ).also{adapter->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            difficulitySpinner.adapter = adapter
+        }
+        //Join Challenge
+        var challenge = binding.challenge
+        challenge.setOnClickListener(){
+            val difficulty = difficulitySpinner.getSelectedItem().toString()
+            Toast.makeText(context,"JOIN CHALLENGE WITH DIFFICULTY - ${difficulty}",Toast.LENGTH_SHORT).show()
+            //Start a new fragment or a new activity based on the difficulty selected by user
+        }
         return root
     }
     private fun startLocationUpdates(){
