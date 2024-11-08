@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.snaptrail.databinding.FragmentSlideshowBinding
@@ -23,6 +24,14 @@ class SlideshowFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSlideshowBinding.inflate(inflater, container, false)
+
+        // Show user currently logged in
+        val user = Firebase.auth.currentUser
+        user?.let {
+            val email = it.email
+            val displayUser: TextView = binding.user
+            displayUser.text = "Hello $email"
+        }
 
         // Set up the logout button to sign out the user and redirect to LoginActivity
         binding.logoutButton.setOnClickListener {

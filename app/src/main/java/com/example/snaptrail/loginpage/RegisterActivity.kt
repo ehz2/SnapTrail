@@ -2,7 +2,10 @@ package com.example.snaptrail.loginpage
 
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -29,6 +32,29 @@ class RegisterActivity : AppCompatActivity() {
 
         auth = Firebase.auth
 
+        binding.password.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val password = s.toString()
+
+                // Check each requirement and update the color accordingly
+                binding.requirementLength.setTextColor(
+                    if (password.length >= 8) Color.GREEN else Color.RED
+                )
+                binding.requirementUppercase.setTextColor(
+                    if (password.any { it.isUpperCase() }) Color.GREEN else Color.RED
+                )
+                binding.requirementLowercase.setTextColor(
+                    if (password.any { it.isLowerCase() }) Color.GREEN else Color.RED
+                )
+                binding.requirementNumber.setTextColor(
+                    if (password.any { it.isDigit() }) Color.GREEN else Color.RED
+                )
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         binding.continueBtn.setOnClickListener {
             auth.createUserWithEmailAndPassword(binding.email.getText().toString().trim(), binding.password.getText().toString().trim())
                 .addOnCompleteListener(this) { task ->
@@ -43,7 +69,7 @@ class RegisterActivity : AppCompatActivity() {
                         Log.w(TAG, "createUserWithEmail:failure", task.exception)
                         Toast.makeText(
                             baseContext,
-                            "Authentication failed.",
+                            "Registration failed.",
                             Toast.LENGTH_SHORT,
                         ).show()
                     }

@@ -30,7 +30,43 @@
         android:layout_height="wrap_content"
         android:autofillHints="password"
         android:inputType="textPassword"
-        android:hint="Password (must be at least 6 characters)"/>
+        android:hint="Password"/>
+
+    <TextView
+        android:id="@+id/requirementLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• At least 8 characters"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/requirementUppercase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• Contains an uppercase letter"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/requirementLowercase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• Contains a lowercase letter"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/requirementNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="• Contains a number"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp" />
 
     <Button
         android:id="@+id/continue_btn"
