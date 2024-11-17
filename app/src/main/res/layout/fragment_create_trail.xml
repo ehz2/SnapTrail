@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/editTrailName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Trail Name"/>
+
+    <EditText
+        android:id="@+id/editNumberOfPlayers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Number of Players"/>
+
+    <EditText
+        android:id="@+id/editRules"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Rules"
+        android:inputType="textMultiLine"/>
+
+    <Button
+        android:id="@+id/btnConfigureLocations"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Configure Locations"/>
+
+    <Button
+        android:id="@+id/btnSaveTrail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save Trail"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>

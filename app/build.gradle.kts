@@ -14,8 +14,7 @@ plugins {
 
 android {
     namespace = "com.example.snaptrail"
-    compileSdk = 35
-
+    compileSdk = 34
 
     buildFeatures {
         viewBinding = true
