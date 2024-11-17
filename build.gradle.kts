@@ -5,4 +5,8 @@ plugins {
 
     //firebase
     id("com.google.gms.google-services") version "4.4.2" apply false
+
+//    Google map plugin
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
+
 }
