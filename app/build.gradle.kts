@@ -1,14 +1,26 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
+
+    //firebase
+    id("com.google.gms.google-services")
+
 //    Google map plugin
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
+
 
 }
 
 android {
     namespace = "com.example.snaptrail"
     compileSdk = 35
+
+
+    buildFeatures {
+        viewBinding = true
+    }
+
 
     defaultConfig {
         applicationId = "com.example.snaptrail"
@@ -52,10 +64,20 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+
+    implementation(libs.androidx.activity)
+    implementation(libs.firebase.auth)
+
     implementation(libs.play.services.location)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+
+    //firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1")) //import firebase bom
+    implementation("com.google.firebase:firebase-analytics")
 
 //    Google map implementation
     implementation(libs.play.services.maps)
@@ -63,4 +85,5 @@ dependencies {
     val kotlin_version = "1.8.0"
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
     implementation("com.google.android.libraries.places:places:3.5.0")
+
 }
