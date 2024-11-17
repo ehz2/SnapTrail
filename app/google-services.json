@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "261041652921",
+    "project_id": "snaptrail-3584e",
+    "storage_bucket": "snaptrail-3584e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:261041652921:android:c4f9e02f33d1a7fcab0768",
+        "android_client_info": {
+          "package_name": "com.example.snaptrail"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjoagdOhrkNMc5iVRU1N0sGcG_5sZX8Xo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

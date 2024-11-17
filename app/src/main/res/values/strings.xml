@@ -10,6 +10,17 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+  <!-- TODO: Remove or change this placeholder text -->
+    <string name="menu_home">Create/Join</string>
+    <string name="menu_gallery">Discovery Trail</string>
+    <string name="menu_slideshow">Profile</string>
+
+    <string-array name="difficulity">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+    </string-array>
+
+  <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
