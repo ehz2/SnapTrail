@@ -1,12 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-
-
     //firebase
     id("com.google.gms.google-services")
-
-//    Google map plugin
+    //Google map plugin
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 
 
@@ -14,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.example.snaptrail"
-    compileSdk = 34
+    compileSdk = 35
 
     buildFeatures {
         viewBinding = true

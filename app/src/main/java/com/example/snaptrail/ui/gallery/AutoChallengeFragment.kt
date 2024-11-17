@@ -29,7 +29,7 @@ class AutoChallengeFragment : Fragment() {
         super.onCreate(savedInstanceState)
         println("xd:Hello from challenge")
 
-        val apiKey = BuildConfig.MAPS_API_KEY
+        val apiKey = "AIzaSyCemoUw_8sUUxfEecvOceNMtibpoajex3Q" //BuildConfig.MAPS_API_KEY
         println("xd:api key is ${apiKey}")
         // Log an error if apiKey is not set.
         if (apiKey.isEmpty() || apiKey == "DEFAULT_API_KEY") {
