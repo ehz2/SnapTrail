@@ -10,7 +10,14 @@
         android:id="@+id/btnCreateTrail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
         android:text="Create Trail" />
+
+    <EditText
+        android:id="@+id/joinCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter the game code"/>
 
     <Button
         android:id="@+id/btnJoinTrail"

@@ -9,7 +9,6 @@ plugins {
     id("androidx.navigation.safeargs.kotlin")
     // Parsing
     id("kotlin-parcelize")
-
 }
 
 android {
@@ -71,8 +70,14 @@ dependencies {
     implementation(libs.firebase.auth)
 
     implementation(libs.play.services.location)
+    
+    // Firestore
+    implementation(libs.firebase.firestore.ktx)  
+    implementation(libs.firebase.firestore)
+    implementation(libs.glide)
 
     testImplementation(libs.junit)
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
@@ -90,4 +95,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.1.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // Google AI
+    implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
 }

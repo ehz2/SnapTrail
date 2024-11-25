@@ -15,7 +15,9 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import android.location.LocationManager
 import android.os.Build
+import android.util.Log
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -33,20 +35,32 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlin.properties.Delegates
 
 class GalleryFragment : Fragment(), OnMapReadyCallback {
+    companion object{
+        var DIFFICULITY_KEY = "DifficultyKey"
+        var LONGITUDE_KEY = "LongitudeKey"
+        var LATITUDE_KEY = "LatitudeKey"
+    }
 
+    private val TAG = "xd:"
+    private var locationObtained = false
     private var _binding: FragmentGalleryBinding? = null
     private var userMarkerLocation: Marker? = null
 
-    private lateinit var mMap:GoogleMap
-    private lateinit var locationManager: LocationManager
-    private lateinit var locationRequest:LocationRequest
     private val PERMISSION_REQUEST_CODE = 0
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var latitude by Delegates.notNull<Double>()
+    private var longitude by Delegates.notNull<Double>()
 
     //Use Activity Result Launcher for permission
     private lateinit var requestPermissionLauncher:ActivityResultLauncher<String>
+    private lateinit var mMap:GoogleMap
+    private lateinit var locationManager: LocationManager
+    private lateinit var locationRequest:LocationRequest
+    private lateinit var challengeBtn:Button
+    private lateinit var autoChallengeViewModel: AutoChallengeViewModel
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -72,6 +86,7 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
     ): View {
         val galleryViewModel =
             ViewModelProvider(this).get(GalleryViewModel::class.java)
+        autoChallengeViewModel = ViewModelProvider(requireActivity()).get(AutoChallengeViewModel::class.java)
 
         _binding = FragmentGalleryBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -101,8 +116,9 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
             difficulitySpinner.adapter = adapter
         }
         //Join Challenge
-        var challenge = binding.challenge
-        challenge.setOnClickListener(){
+        challengeBtn = binding.challenge
+
+        challengeBtn.setOnClickListener(){
             val difficulty = difficulitySpinner.getSelectedItem().toString()
 
             //Launch New Fragment
@@ -110,17 +126,28 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
 
             //Share difficulty
             val bundle = Bundle()
-            bundle.putString("DifficultyKey",difficulty)
+            bundle.putString(DIFFICULITY_KEY,difficulty)
+            bundle.putDouble(LATITUDE_KEY,latitude)
+            bundle.putDouble(LONGITUDE_KEY,longitude)
             challengeFragment.arguments = bundle
+
+            //Clear the entries in the view Model because the user wants to start a new trial
+            autoChallengeViewModel.displayList.clear()
+            autoChallengeViewModel.placesList.clear()
             val navController = findNavController()
             navController.navigate(R.id.nav_autoChallenge, bundle)
             Toast.makeText(context,"JOIN CHALLENGE WITH DIFFICULTY - ${difficulty}",Toast.LENGTH_SHORT).show()
+        }
+        Log.e(TAG,"Value of locationObtained is ${locationObtained}")
+        if(!locationObtained) {
+            challengeBtn.visibility = View.GONE
         }
         return root
     }
     private fun startLocationUpdates(){
         //If permission granted request current location
         println("xd:Hello location Updates")
+
         if (ActivityCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED) {
@@ -134,9 +161,10 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
     private fun locationCallback()= object :LocationCallback(){
         override fun onLocationResult(locationResult: LocationResult) {
             for (location in locationResult.locations){
+                latitude = location.latitude
+                longitude = location.longitude
                 println("xd:${location.latitude}, ${location.longitude}")
                 val latLng = LatLng(location.latitude,location.longitude)
-
                 if(userMarkerLocation == null){
                     //create a new marker
                     userMarkerLocation = mMap.addMarker(MarkerOptions().position(latLng)
@@ -147,6 +175,10 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
                     userMarkerLocation?.position = latLng
                 }
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                if (!locationObtained) {
+                    locationObtained = true
+                    challengeBtn.visibility = View.VISIBLE
+                }
             }
         }
     }
@@ -171,5 +203,7 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
         super.onDestroyView()
         _binding = null
         fusedLocationClient.removeLocationUpdates(locationCallback())
+        Log.e(TAG,"On destroy view is called")
     }
+
 }
