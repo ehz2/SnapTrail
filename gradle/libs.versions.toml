@@ -20,6 +20,8 @@ googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 playServicesMaps = "19.0.0"
 playServicesLocation = "21.3.0"
 firebaseFirestoreKtx = "25.1.1"
+firebaseFirestore = "25.1.1"
+glide = "5.0.0-rc01"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +42,8 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version = "4.15.1" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -49,3 +53,4 @@ google-gms-google-services = { id = "com.google.gms.google-services", version.re
 
 google-android-libraries-mapsplatform-secrets-gradle-plugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "googleAndroidLibrariesMapsplatformSecretsGradlePlugin" }
 
+androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version = "2.7.7" }

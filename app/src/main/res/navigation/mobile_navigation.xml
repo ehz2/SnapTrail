@@ -16,6 +16,15 @@
         <action
             android:id="@+id/action_homeFragment_to_createTrailFragment"
             app:destination="@id/createTrailFragment" />
+
+        <!-- Action to navigate to PlayerLobbyFragment -->
+        <action
+            android:id="@+id/action_homeFragment_to_playerLobbyFragment"
+            app:destination="@id/playerLobbyFragment">
+            <argument
+                android:name="gameId"
+                app:argType="string" />
+        </action>
     </fragment>
 
     <!-- Gallery Fragment -->
@@ -23,7 +32,12 @@
         android:id="@+id/nav_gallery"
         android:name="com.example.snaptrail.ui.gallery.GalleryFragment"
         android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_gallery">
+        <action
+            android:id="@+id/action_galleryFragment_to_autoChallengeFragment"
+            app:destination="@id/nav_autoChallenge"
+            />
+    </fragment>
 
     <!-- Slideshow Fragment -->
     <fragment
@@ -43,18 +57,77 @@
         <action
             android:id="@+id/action_createTrailFragment_to_configureLocationsFragment"
             app:destination="@id/configureLocationsFragment" />
+
+        <!-- Action to navigate to HostLobbyFragment -->
+        <action
+            android:id="@+id/action_createTrailFragment_to_hostLobbyFragment"
+            app:destination="@id/hostLobbyFragment">
+            <argument
+                android:name="gameId"
+                app:argType="string" />
+        </action>
     </fragment>
 
-    <!-- Configure Locations Fragment -->
     <fragment
         android:id="@+id/configureLocationsFragment"
-        android:name="com.example.snaptrail.ui.home.create.ConfigureLocationsFragment"
-        android:label="Configure Locations"
-        tools:layout="@layout/fragment_configure_locations" />
+        android:name="com.example.snaptrail.ui.home.create.locations.ConfigureLocationsFragment"
+        android:label="Configure Locations">
+        <action
+            android:id="@+id/actionConfigureLocationsFragmentToReviewLocationsFragment"
+            app:destination="@id/reviewLocationsFragment">
+            <argument
+                android:name="locations"
+                app:argType="com.example.snaptrail.ui.home.create.locations.LocationData[]"
+                app:nullable="false" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/reviewLocationsFragment"
+        android:name="com.example.snaptrail.ui.home.create.locations.ReviewLocationsFragment"
+        android:label="Review Locations">
+        <argument
+            android:name="locations"
+            app:argType="com.example.snaptrail.ui.home.create.locations.LocationData[]"
+            app:nullable="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_autoChallenge"
         android:name="com.example.snaptrail.ui.gallery.AutoChallengeFragment"
         android:label="Auto Challenge Fragment"
-        />
+        tools:layout="@layout/fragment_auto_challenge">
+        <action
+            android:id="@+id/action_autoChallengeFragment_to_hintsFragment"
+            app:destination="@id/hintsFragment"/>
+    </fragment>
+  
+    <fragment
+        android:id="@+id/hintsFragment"
+        android:name = "com.example.snaptrail.ui.gallery.HintsFragment"
+        android:label="Hints Fragment"
+        tools:layout="@layout/fragment_hints"/>
+
+    <!-- HostLobbyFragment -->
+    <fragment
+        android:id="@+id/hostLobbyFragment"
+        android:name="com.example.snaptrail.ui.home.game.HostLobbyFragment"
+        android:label="Host Trail"
+        tools:layout="@layout/fragment_host_lobby">
+        <argument
+            android:name="gameId"
+            app:argType="string"/>
+    </fragment>
+
+    <!-- PlayerLobbyFragment -->
+    <fragment
+        android:id="@+id/playerLobbyFragment"
+        android:name="com.example.snaptrail.ui.home.game.PlayerLobbyFragment"
+        android:label="Current Game"
+        tools:layout="@layout/fragment_player_lobby">
+        <argument
+            android:name="gameId"
+            app:argType="string" />
+    </fragment>
+  
 </navigation>

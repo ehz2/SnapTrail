@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Display the game code -->
+    <TextView
+        android:id="@+id/tvGameCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Trail Code: "
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- ListView to show players -->
+    <ListView
+        android:id="@+id/lvPlayers"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <!-- Horizontal layout for buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="16dp">
+
+        <!-- Button to start the game -->
+        <Button
+            android:id="@+id/btnStartGame"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Start Trail"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@android:color/holo_green_light"/>
+
+        <!-- Button to delete the game -->
+        <Button
+            android:id="@+id/btnDeleteGame"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Delete Trail"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@android:color/holo_red_light"/>
+
+    </LinearLayout>
+
+</LinearLayout>
