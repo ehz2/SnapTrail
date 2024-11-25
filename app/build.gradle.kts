@@ -5,8 +5,6 @@ plugins {
     id("com.google.gms.google-services")
     //Google map plugin
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
-
-
 }
 
 android {
@@ -65,12 +63,16 @@ dependencies {
     implementation(libs.firebase.auth)
 
     implementation(libs.play.services.location)
+    
+    // Firestore
+    implementation(libs.firebase.firestore.ktx)  
+    implementation(libs.firebase.firestore)
     implementation(libs.glide)
 
     testImplementation(libs.junit)
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
 
     //firebase
     implementation(platform("com.google.firebase:firebase-bom:33.5.1")) //import firebase bom

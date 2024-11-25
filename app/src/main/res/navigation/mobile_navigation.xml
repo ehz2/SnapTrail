@@ -16,6 +16,15 @@
         <action
             android:id="@+id/action_homeFragment_to_createTrailFragment"
             app:destination="@id/createTrailFragment" />
+
+        <!-- Action to navigate to PlayerLobbyFragment -->
+        <action
+            android:id="@+id/action_homeFragment_to_playerLobbyFragment"
+            app:destination="@id/playerLobbyFragment">
+            <argument
+                android:name="gameId"
+                app:argType="string" />
+        </action>
     </fragment>
 
     <!-- Gallery Fragment -->
@@ -48,6 +57,15 @@
         <action
             android:id="@+id/action_createTrailFragment_to_configureLocationsFragment"
             app:destination="@id/configureLocationsFragment" />
+
+        <!-- Action to navigate to HostLobbyFragment -->
+        <action
+            android:id="@+id/action_createTrailFragment_to_hostLobbyFragment"
+            app:destination="@id/hostLobbyFragment">
+            <argument
+                android:name="gameId"
+                app:argType="string" />
+        </action>
     </fragment>
 
     <!-- Configure Locations Fragment -->
@@ -74,4 +92,26 @@
         android:label="Hints Fragment"
         tools:layout="@layout/fragment_hints"
         />
+
+    <!-- HostLobbyFragment -->
+    <fragment
+        android:id="@+id/hostLobbyFragment"
+        android:name="com.example.snaptrail.ui.home.game.HostLobbyFragment"
+        android:label="Host Trail"
+        tools:layout="@layout/fragment_host_lobby">
+        <argument
+            android:name="gameId"
+            app:argType="string" />
+    </fragment>
+
+    <!-- PlayerLobbyFragment -->
+    <fragment
+        android:id="@+id/playerLobbyFragment"
+        android:name="com.example.snaptrail.ui.home.game.PlayerLobbyFragment"
+        android:label="Current Game"
+        tools:layout="@layout/fragment_player_lobby">
+        <argument
+            android:name="gameId"
+            app:argType="string" />
+    </fragment>
 </navigation>
