@@ -31,6 +31,7 @@ class CreateTrailFragment : Fragment() {
 
         binding.btnSaveTrail.setOnClickListener {
             // Implement logic to save trail information here
+            // Ignore this for now
         }
     }
 
