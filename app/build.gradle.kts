@@ -5,8 +5,6 @@ plugins {
     id("com.google.gms.google-services")
     //Google map plugin
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
-
-
 }
 
 android {
@@ -65,6 +63,8 @@ dependencies {
     implementation(libs.firebase.auth)
 
     implementation(libs.play.services.location)
+    implementation(libs.firebase.firestore.ktx)  //firestore
+    implementation(libs.firebase.firestore)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
