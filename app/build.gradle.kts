@@ -63,13 +63,16 @@ dependencies {
     implementation(libs.firebase.auth)
 
     implementation(libs.play.services.location)
-    implementation(libs.firebase.firestore.ktx)  //firestore
+    
+    // Firestore
+    implementation(libs.firebase.firestore.ktx)  
     implementation(libs.firebase.firestore)
+    implementation(libs.glide)
 
     testImplementation(libs.junit)
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
 
     //firebase
     implementation(platform("com.google.firebase:firebase-bom:33.5.1")) //import firebase bom
@@ -81,5 +84,6 @@ dependencies {
     val kotlin_version = "1.8.0"
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
     implementation("com.google.android.libraries.places:places:3.5.0")
-
+//    Google AI
+    implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
 }

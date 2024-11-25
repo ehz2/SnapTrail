@@ -32,7 +32,12 @@
         android:id="@+id/nav_gallery"
         android:name="com.example.snaptrail.ui.gallery.GalleryFragment"
         android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_gallery">
+        <action
+            android:id="@+id/action_galleryFragment_to_autoChallengeFragment"
+            app:destination="@id/nav_autoChallenge"
+            />
+    </fragment>
 
     <!-- Slideshow Fragment -->
     <fragment
@@ -74,6 +79,18 @@
         android:id="@+id/nav_autoChallenge"
         android:name="com.example.snaptrail.ui.gallery.AutoChallengeFragment"
         android:label="Auto Challenge Fragment"
+        tools:layout="@layout/fragment_auto_challenge"
+        >
+        <action
+            android:id="@+id/action_autoChallengeFragment_to_hintsFragment"
+            app:destination="@id/hintsFragment"
+            />
+    </fragment>
+    <fragment
+        android:id="@+id/hintsFragment"
+        android:name = "com.example.snaptrail.ui.gallery.HintsFragment"
+        android:label="Hints Fragment"
+        tools:layout="@layout/fragment_hints"
         />
 
     <!-- HostLobbyFragment -->

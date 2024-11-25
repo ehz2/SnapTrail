@@ -21,6 +21,7 @@ playServicesMaps = "19.0.0"
 playServicesLocation = "21.3.0"
 firebaseFirestoreKtx = "25.1.1"
 firebaseFirestore = "25.1.1"
+glide = "5.0.0-rc01"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,7 @@ play-services-maps = { group = "com.google.android.gms", name = "play-services-m
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version = "4.15.1" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
