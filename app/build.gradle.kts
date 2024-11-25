@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.firebase.auth)
 
     implementation(libs.play.services.location)
+    implementation(libs.firebase.firestore.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

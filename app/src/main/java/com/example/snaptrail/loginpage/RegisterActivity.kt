@@ -8,21 +8,18 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.snaptrail.MainActivity
-import com.example.snaptrail.R
-import com.example.snaptrail.databinding.ActivityLoginBinding
 import com.example.snaptrail.databinding.ActivityRegisterBinding
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var auth: FirebaseAuth
+    private val firestore = Firebase.firestore // Firestore instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,12 +53,24 @@ class RegisterActivity : AppCompatActivity() {
         })
 
         binding.continueBtn.setOnClickListener {
-            auth.createUserWithEmailAndPassword(binding.email.getText().toString().trim(), binding.password.getText().toString().trim())
+            val email = binding.email.text.toString().trim()
+            val password = binding.password.text.toString().trim()
+            val username = binding.username.text.toString().trim()
+
+            if (username.isEmpty()) {
+                Toast.makeText(this, "Please enter a username", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        // Sign in success, update UI with the signed-in user's information
+                        // Sign in success, save username to Firestore
                         Log.d(TAG, "createUserWithEmail:success")
                         val user = auth.currentUser
+                        user?.let {
+                            saveUsernameToFirestore(it.uid, username)
+                        }
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
                     } else {
@@ -80,6 +89,21 @@ class RegisterActivity : AppCompatActivity() {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun saveUsernameToFirestore(uid: String, username: String) {
+        val userDoc = firestore.collection("users").document(uid)
+        val userData = mapOf("username" to username)
+
+        userDoc.set(userData)
+            .addOnSuccessListener {
+                Log.d(TAG, "Username saved successfully")
+                Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Failed to save username: ${exception.message}")
+                Toast.makeText(this, "Failed to save username", Toast.LENGTH_SHORT).show()
+            }
     }
 
     public override fun onStart() {
