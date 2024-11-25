@@ -68,30 +68,45 @@
         </action>
     </fragment>
 
-    <!-- Configure Locations Fragment -->
     <fragment
         android:id="@+id/configureLocationsFragment"
-        android:name="com.example.snaptrail.ui.home.create.ConfigureLocationsFragment"
-        android:label="Configure Locations"
-        tools:layout="@layout/fragment_configure_locations" />
+        android:name="com.example.snaptrail.ui.home.create.locations.ConfigureLocationsFragment"
+        android:label="Configure Locations">
+        <action
+            android:id="@+id/actionConfigureLocationsFragmentToReviewLocationsFragment"
+            app:destination="@id/reviewLocationsFragment">
+            <argument
+                android:name="locations"
+                app:argType="com.example.snaptrail.ui.home.create.locations.LocationData[]"
+                app:nullable="false" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/reviewLocationsFragment"
+        android:name="com.example.snaptrail.ui.home.create.locations.ReviewLocationsFragment"
+        android:label="Review Locations">
+        <argument
+            android:name="locations"
+            app:argType="com.example.snaptrail.ui.home.create.locations.LocationData[]"
+            app:nullable="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_autoChallenge"
         android:name="com.example.snaptrail.ui.gallery.AutoChallengeFragment"
         android:label="Auto Challenge Fragment"
-        tools:layout="@layout/fragment_auto_challenge"
-        >
+        tools:layout="@layout/fragment_auto_challenge">
         <action
             android:id="@+id/action_autoChallengeFragment_to_hintsFragment"
-            app:destination="@id/hintsFragment"
-            />
+            app:destination="@id/hintsFragment"/>
     </fragment>
+  
     <fragment
         android:id="@+id/hintsFragment"
         android:name = "com.example.snaptrail.ui.gallery.HintsFragment"
         android:label="Hints Fragment"
-        tools:layout="@layout/fragment_hints"
-        />
+        tools:layout="@layout/fragment_hints"/>
 
     <!-- HostLobbyFragment -->
     <fragment
@@ -101,7 +116,7 @@
         tools:layout="@layout/fragment_host_lobby">
         <argument
             android:name="gameId"
-            app:argType="string" />
+            app:argType="string"/>
     </fragment>
 
     <!-- PlayerLobbyFragment -->
@@ -114,4 +129,5 @@
             android:name="gameId"
             app:argType="string" />
     </fragment>
+  
 </navigation>

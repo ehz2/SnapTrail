@@ -1,10 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    //firebase
+    // Firebase
     id("com.google.gms.google-services")
-    //Google map plugin
+    // Google map plugin
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
+    // Navigation
+    id("androidx.navigation.safeargs.kotlin")
+    // Parsing
+    id("kotlin-parcelize")
 }
 
 android {
@@ -14,7 +18,6 @@ android {
     buildFeatures {
         viewBinding = true
     }
-
 
     defaultConfig {
         applicationId = "com.example.snaptrail"
@@ -35,17 +38,21 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     buildFeatures {
         viewBinding = true
         buildConfig = true
     }
+
 }
 
 dependencies {
@@ -74,16 +81,20 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    //firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1")) //import firebase bom
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-analytics")
 
-//    Google map implementation
+    // Google map implementation
     implementation(libs.play.services.maps)
-//    Google places implementation
+
+    // Google places implementation
     val kotlin_version = "1.8.0"
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
     implementation("com.google.android.libraries.places:places:3.5.0")
-//    Google AI
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // Google AI
     implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
 }
