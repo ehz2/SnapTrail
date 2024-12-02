@@ -99,7 +99,11 @@
         tools:layout="@layout/fragment_auto_challenge">
         <action
             android:id="@+id/action_autoChallengeFragment_to_hintsFragment"
-            app:destination="@id/hintsFragment"/>
+            app:destination="@id/hintsFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
     </fragment>
   
     <fragment
