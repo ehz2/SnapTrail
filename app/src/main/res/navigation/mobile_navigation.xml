@@ -117,17 +117,55 @@
         <argument
             android:name="gameId"
             app:argType="string"/>
+        <!-- Action to navigate to HostGameFragment -->
+        <action
+            android:id="@+id/action_hostLobbyFragment_to_hostGameFragment"
+            app:destination="@id/hostGameFragment">
+            <argument
+                android:name="gameId"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <!-- HostGameFragment -->
+    <fragment
+        android:id="@+id/hostGameFragment"
+        android:name="com.example.snaptrail.ui.home.game.HostGameFragment"
+        android:label="Ongoing Trail"
+        tools:layout="@layout/fragment_host_game">
+        <argument
+            android:name="gameId"
+            app:argType="string" />
     </fragment>
 
     <!-- PlayerLobbyFragment -->
     <fragment
         android:id="@+id/playerLobbyFragment"
         android:name="com.example.snaptrail.ui.home.game.PlayerLobbyFragment"
-        android:label="Current Game"
+        android:label="Joined Trail"
         tools:layout="@layout/fragment_player_lobby">
         <argument
             android:name="gameId"
             app:argType="string" />
+        <!-- Action to navigate to PlayerGameFragment -->
+        <action
+            android:id="@+id/action_playerLobbyFragment_to_playerGameFragment"
+            app:destination="@id/playerGameFragment">
+            <argument
+                android:name="gameId"
+                app:argType="string" />
+        </action>
     </fragment>
-  
+
+    <!-- PlayerGameFragment -->
+    <fragment
+        android:id="@+id/playerGameFragment"
+        android:name="com.example.snaptrail.ui.home.game.PlayerGameFragment"
+        android:label="Explore!"
+        tools:layout="@layout/fragment_player_game">
+        <argument
+            android:name="gameId"
+            app:argType="string" />
+    </fragment>
+
 </navigation>

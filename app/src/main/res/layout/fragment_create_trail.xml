@@ -16,13 +16,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:hint="Number of Players"/>
+        android:hint="Number of Players (leave blank if no limit)"/>
 
     <EditText
-        android:id="@+id/editRules"
+        android:id="@+id/editComment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Rules"
+        android:hint="Comments"
         android:inputType="textMultiLine"/>
 
     <Button
