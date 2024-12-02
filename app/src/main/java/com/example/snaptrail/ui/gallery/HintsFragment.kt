@@ -1,15 +1,21 @@
 package com.example.snaptrail.ui.gallery
 
+import android.Manifest
 import android.R.attr.bitmap
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,6 +24,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -34,6 +42,10 @@ import com.google.android.libraries.places.api.net.FetchResolvedPhotoUriRequest
 import com.google.android.libraries.places.api.net.FetchResolvedPhotoUriResponse
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.android.libraries.places.api.model.Place.Field
+import com.google.android.libraries.places.api.model.PlaceLikelihood
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -41,10 +53,19 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import nl.dionsegijn.konfetti.core.Angle
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.Rotation
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.core.models.Size
+import nl.dionsegijn.konfetti.core.models.Shape
+import nl.dionsegijn.konfetti.xml.KonfettiView
 import okio.IOException
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 class HintsFragment : Fragment() {
     private val Tag = "xd:"
@@ -54,6 +75,7 @@ class HintsFragment : Fragment() {
     private lateinit var hintsTextView: TextView
     private lateinit var placeImageView: ImageView
     private lateinit var titleView: TextView
+    private lateinit var confettiView: KonfettiView
     private lateinit var placesClient: PlacesClient
     private lateinit var generativeModel: GenerativeModel
     private lateinit var geminiAPIKey:String
@@ -62,6 +84,8 @@ class HintsFragment : Fragment() {
     private lateinit var clicPictureBtn:Button
     private lateinit var place:Place
     private lateinit var cameraPhotoUri: Uri
+    private lateinit var selectedPlaceId: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         autoChallengeViewModel = ViewModelProvider(requireActivity()).
@@ -83,12 +107,15 @@ class HintsFragment : Fragment() {
         titleView = view.findViewById(R.id.titleHints)
         revealBtn = view.findViewById(R.id.revealButton)
         clicPictureBtn = view.findViewById(R.id.clickPicture)
+        confettiView = view.findViewById(R.id.konfettiView)
+        confettiView.visibility = View.VISIBLE
+        confettiView.bringToFront()
 
         position = arguments?.getInt(AutoChallengeFragment.POSITION)!!
         place = autoChallengeViewModel.placesList[position]
         placeDetails = "${place.name} - ${place.address}"
-//        Log.e(Tag,"the position is  ${position}")
         var placeId = place.id !!
+        selectedPlaceId = placeId
         var placeName = place.name!!
         val cachedData = autoChallengeViewModel.getHintAndImage(placeId)
         //If data is already cached use that
@@ -115,6 +142,91 @@ class HintsFragment : Fragment() {
         return view
     }
 
+    private fun verifyPlace(selectedPlaceId:String) {
+        val placeFields: List<Place.Field> = listOf(
+            Place.Field.NAME, Place.Field.ID,
+            Place.Field.ADDRESS
+        )
+        val request: FindCurrentPlaceRequest = FindCurrentPlaceRequest.newInstance(placeFields)
+        // Call the Current Place API
+        if (ContextCompat.checkSelfPermission(requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED) {
+
+            val placeResponse = placesClient.findCurrentPlace(request)
+            placeResponse.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val response = task.result
+                    var isCorrect = false
+                    for (placeLikelihood: PlaceLikelihood in response?.placeLikelihoods
+                        ?: emptyList()) {
+                        val place = placeLikelihood.place
+                        val likelihood = placeLikelihood.likelihood
+
+                        if (place.id == selectedPlaceId && likelihood > 0.5) { // Adjust threshold as needed
+                            // User is at the correct location
+                            isCorrect = true
+                            Log.i(
+                                Tag,
+                                "Place '${placeLikelihood.place.name}' has likelihood: ${placeLikelihood.likelihood}"
+                            )
+                            break
+                        }
+                    }
+                    if(isCorrect){
+                        Snackbar.make(requireView(), "Correct location! Well done!", Snackbar.LENGTH_LONG)
+                            .setAction("Go Back") {
+                                parentFragmentManager.popBackStack()
+                            }.show()
+                        // Show confetti
+                        repeat(2){
+                            showSuccessConfetti()
+                        }
+                        val resultBundle = Bundle()
+                        resultBundle.putInt(SUCCESSFUL_PLACE_POSITION, position) // Replace `position` with the correct index
+                        parentFragmentManager.setFragmentResult(PLACE_SUCCESS_KEY, resultBundle)
+
+                        return@addOnCompleteListener
+                    }
+                    else{
+                        shakeView(requireView())
+                        Snackbar.make(requireView(), "Correct location! Well done!", Snackbar.LENGTH_LONG).show()
+                        Toast.makeText(context,"Oops! This isn't the correct location. Try again!",Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    val exception = task.exception
+                    if (exception is ApiException) {
+                        Log.e(Tag, "Place not found: ${exception.statusCode}")
+                    }
+                }
+            }
+        }else{
+            Util.checkAndRequestPermissions(requireActivity())
+        }
+    }
+    private fun showSuccessConfetti() {
+        Log.d(Tag,"ConfettiView visibility: ${confettiView.visibility}")
+        var party = Party(
+            speed = 30f,
+            maxSpeed = 50f,
+            damping = 0.9f,
+            angle = Angle.TOP,
+            spread = 45,
+            size = listOf(Size.SMALL, Size.LARGE, Size.LARGE),
+            shapes = listOf(Shape.Square, Shape.Circle).filterNotNull(),
+            timeToLive = 2000L,
+            rotation = Rotation(),
+            colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+            emitter = Emitter(duration = 2000, TimeUnit.MILLISECONDS).max(30),
+            position = Position.Relative(0.5, 1.0)
+        )
+        confettiView.start(party)
+    }
+    private fun shakeView(view: View) {
+        val shake = ObjectAnimator.ofFloat(view, "translationX", 0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f)
+        shake.duration = 2000
+        shake.start()
+    }
     private fun fetchImageAndHints(placeName:String, placeId:String){
         CoroutineScope(Dispatchers.IO).launch {
             try{
@@ -183,7 +295,6 @@ class HintsFragment : Fragment() {
                     " based on the hints I give. Can you please generate 5 easy hints about ${placeName}." +
                     "When you give hints make sure to leave more space between lines"
             val response = generativeModel.generateContent(prompt)
-            Log.e(Tag,response.text!!)
             response.text ?: "No hints could be generated."
         } catch (e: Exception) {
             Log.e(Tag, "Error generating hints: ${e.localizedMessage}")
@@ -193,15 +304,9 @@ class HintsFragment : Fragment() {
 
     private fun openCamera() {
         // Create an intent to open the camera
+        Util.checkAndRequestPermissions(requireActivity())
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-
-        // Ensure there's a camera activity available
-//        if (cameraIntent.resolveActivity(requireActivity().packageManager) != null) {
-//            startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
-//        }
         startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
-
-        Log.e(Tag,"HELLO!")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -209,10 +314,10 @@ class HintsFragment : Fragment() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             // Retrieve the Bitmap from the Intent
             val imageBitmap = data?.extras?.get("data") as Bitmap?
-
             imageBitmap?.let {
                 saveBitmapToGallery(it) // Save the Bitmap to the gallery
             }
+            verifyPlace(selectedPlaceId)
         }
     }
 
@@ -242,76 +347,9 @@ class HintsFragment : Fragment() {
 
     companion object {
         const val REQUEST_IMAGE_CAPTURE = 1
+        var PLACE_SUCCESS_KEY = "place_success_key"
+        var SUCCESSFUL_PLACE_POSITION = "successful_place_position"
     }
 
 
 }
-
-//Use places API to display photo
-//        val fields = listOf(Place.Field.PHOTO_METADATAS)
-//        val placeRequest = FetchPlaceRequest.newInstance(placeId, fields)
-//        placesClient.fetchPlace(placeRequest)
-//            .addOnSuccessListener { response: FetchPlaceResponse ->
-//                val place = response.place
-//                Log.e(Tag,"The place is ${place}")
-//
-//                Log.e(Tag,"The place name is ${place.name}")
-//                // Get the photo metadata.
-//                val metada = place.photoMetadatas
-//                if (metada == null || metada.isEmpty()) {
-//                    Log.w(Tag, "No photo metadata.")
-//                    return@addOnSuccessListener
-//                }
-//
-//                val photoMetadata = metada.first()
-//                Log.e(Tag,"The photo Metadata is ${photoMetadata}")
-//
-//                // Get the attribution text.
-//                val attributions = photoMetadata?.attributions
-//
-//                // Get the screen width in pixels
-//                val screenWidth = Resources.getSystem().displayMetrics.widthPixels
-//
-//                // Create a FetchResolvedPhotoUriRequest with screen width
-//                val photoRequest = FetchResolvedPhotoUriRequest.builder(photoMetadata)
-//                    .setMaxWidth(screenWidth) // Set the width to the screen width
-//                    .setMaxHeight((screenWidth * 0.6).toInt())
-//                    .build()
-//                placesClient.fetchResolvedPhotoUri(photoRequest)
-//                    .addOnSuccessListener { fetchResolvedPhotoResponse: FetchResolvedPhotoUriResponse ->
-//                        val uri = fetchResolvedPhotoResponse.uri
-//                        val requestOptions = RequestOptions().override(com.bumptech.glide.request.target.Target.SIZE_ORIGINAL)
-//
-//                        Glide.with(this).load(uri).apply(requestOptions).into(placeImageView);
-//                    }.addOnFailureListener { exception: Exception ->
-//                        if (exception is ApiException) {
-//                            Log.e(Tag, "Place not found: " + exception.message)
-//                            val statusCode = exception.statusCode
-//                        }
-//                    }
-//            }.addOnFailureListener { e ->
-//                Log.e(Tag, "Place fetch error: ${e.message}")
-//                placeImageView.setImageResource(R.drawable.placeholder)
-//            }
-//        CoroutineScope(Dispatchers.IO).launch{
-//            var imageUri = fetchImage(placeId)
-//            val requestOptions = RequestOptions().override(com.bumptech.glide.request.target.Target.SIZE_ORIGINAL)
-//            try{
-//                withContext(Dispatchers.Main) {
-//                    Glide.with(this@HintsFragment).load(imageUri).apply(requestOptions)
-//                        .into(placeImageView);
-//                }
-//            }catch (e:Exception){
-//                //no Image
-//                Log.e(Tag,"No Image available inside the coroutine")
-//            }
-//        }
-
-
-//Use Gemini to display hints about the place
-//        CoroutineScope(Dispatchers.IO).launch{
-//            var response = generateHints()
-//            withContext(Dispatchers.Main){
-//                placeNameView.text = response
-//            }
-//        }

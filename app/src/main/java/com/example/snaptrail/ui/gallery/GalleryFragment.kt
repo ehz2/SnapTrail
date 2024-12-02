@@ -163,7 +163,7 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
             for (location in locationResult.locations){
                 latitude = location.latitude
                 longitude = location.longitude
-                println("xd:${location.latitude}, ${location.longitude}")
+//                println("xd:${location.latitude}, ${location.longitude}")
                 val latLng = LatLng(location.latitude,location.longitude)
                 if(userMarkerLocation == null){
                     //create a new marker
