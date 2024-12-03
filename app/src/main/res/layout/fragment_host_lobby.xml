@@ -10,6 +10,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Trail Name"
+        android:textColor="@color/black"
+        android:fontFamily="@font/ptserif_bold"
         android:textStyle="bold"
         android:textSize="18sp"
         android:layout_marginTop="8dp"/>
@@ -19,6 +21,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Players"
+        android:textColor="@color/black"
+        android:fontFamily="@font/ptserif_bold"
         android:layout_marginTop="4dp"/>
 
     <!-- Display the game code -->
@@ -28,6 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Trail Code: "
+        android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp"/>
@@ -37,6 +42,7 @@
         android:id="@+id/lvPlayers"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:background="@color/white"
         android:layout_weight="1"/>
 
     <!-- Horizontal layout for buttons -->
