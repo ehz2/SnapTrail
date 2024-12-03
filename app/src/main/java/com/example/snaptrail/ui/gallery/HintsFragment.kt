@@ -88,6 +88,7 @@ class HintsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Util.checkAndRequestPermissions(requireActivity())
         autoChallengeViewModel = ViewModelProvider(requireActivity()).
         get(AutoChallengeViewModel::class.java)
         placesClient = autoChallengeViewModel.placesClient
@@ -114,6 +115,7 @@ class HintsFragment : Fragment() {
         position = arguments?.getInt(AutoChallengeFragment.POSITION)!!
         place = autoChallengeViewModel.placesList[position]
         placeDetails = "${place.name} - ${place.address}"
+        Log.e(Tag,"THe place details are $placeDetails")
         var placeId = place.id !!
         selectedPlaceId = placeId
         var placeName = place.name!!
@@ -190,8 +192,7 @@ class HintsFragment : Fragment() {
                     }
                     else{
                         shakeView(requireView())
-                        Snackbar.make(requireView(), "Correct location! Well done!", Snackbar.LENGTH_LONG).show()
-                        Toast.makeText(context,"Oops! This isn't the correct location. Try again!",Toast.LENGTH_SHORT).show()
+                        Snackbar.make(requireView(), "Oops! This isn't the correct location. Try again!", Snackbar.LENGTH_LONG).show()
                     }
                 } else {
                     val exception = task.exception
@@ -292,7 +293,9 @@ class HintsFragment : Fragment() {
     private suspend fun generateHints(placeName:String): String {
         return try {
             val prompt = "I am making a game where the person has to guess the place" +
-                    " based on the hints I give. Can you please generate 5 easy hints about ${placeName}." +
+                    " based on the hints I give. Can you please generate 5 easy hints about ${placeName} with address" +
+                    "${place.address}." +
+                    " Make sure not to mention place name in hints. " +
                     "When you give hints make sure to leave more space between lines"
             val response = generativeModel.generateContent(prompt)
             response.text ?: "No hints could be generated."
@@ -304,7 +307,6 @@ class HintsFragment : Fragment() {
 
     private fun openCamera() {
         // Create an intent to open the camera
-        Util.checkAndRequestPermissions(requireActivity())
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
     }

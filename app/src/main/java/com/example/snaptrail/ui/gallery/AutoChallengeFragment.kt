@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.snaptrail.BuildConfig
 import com.example.snaptrail.R
+import com.example.snaptrail.ui.gallery.HintsFragment.Companion.PLACE_SUCCESS_KEY
+import com.example.snaptrail.ui.gallery.HintsFragment.Companion.SUCCESSFUL_PLACE_POSITION
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
@@ -30,6 +32,9 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.api.net.SearchNearbyRequest
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -55,6 +60,10 @@ class AutoChallengeFragment : Fragment() {
 
     companion object{
         val POSITION = "PositionKey"
+        val TOTAL_PLACES_KEY = "TotalPlacesKey"
+        val TOTAL_PLACES_BUNDLE_KEY = "TotalPlacesBundleKey"
+        val DIFFICULTY_MODE = "DifficultyKey"
+        val DIFFICULTY_MODE_BUNDLE = "DifficultyBundleKey"
     }
     private lateinit var placesClient: PlacesClient
     private lateinit var listPlaces: List<Place>
@@ -110,7 +119,6 @@ class AutoChallengeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        println("xd:Hello from on create view")
         // Inflate the layout for this fragment
         val view =  inflater.inflate(R.layout.fragment_auto_challenge, container, false)
         val placesListView = view.findViewById<ListView>(R.id.placesListView)
@@ -227,6 +235,9 @@ class AutoChallengeFragment : Fragment() {
             repeat(4){
                 showSuccessConfetti()
             }
+            val resultBundle = Bundle()
+            resultBundle.putInt(DIFFICULTY_MODE, numPlaces)
+            parentFragmentManager.setFragmentResult(DIFFICULTY_MODE_BUNDLE, resultBundle)
         }
     }
     private fun showSuccessConfetti() {
@@ -264,22 +275,11 @@ class AutoChallengeFragment : Fragment() {
             }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.e(TAG,"On destroy view is called")
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.e(TAG,"On resume is called")
-
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        Log.e(TAG,"On resume is called")
-
+        val resultBundle = Bundle()
+        resultBundle.putInt(TOTAL_PLACES_KEY, autoChallengeViewModel.successfulPlaces.size)
+        parentFragmentManager.setFragmentResult(TOTAL_PLACES_BUNDLE_KEY, resultBundle)
     }
 
 }
