@@ -49,7 +49,6 @@ class SlideshowFragment : Fragment() {
 
     private fun loadUsernameFromFirestore(uid: String) {
         val userDoc = firestore.collection("users").document(uid)
-
         userDoc.get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {

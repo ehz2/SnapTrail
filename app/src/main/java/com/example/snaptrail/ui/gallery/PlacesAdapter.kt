@@ -26,9 +26,6 @@ class PlacesAdapter(
         val nameTextView = view.findViewById<TextView>(R.id.place_name)
         val addressTextView = view.findViewById<TextView>(R.id.place_address)
 
-//        nameTextView.text = place?.name
-//        addressTextView.text = place?.address
-
         // Highlight successful places with a light green background
         if (successfulPositions.contains(position)) {
             view.setBackgroundColor(ContextCompat.getColor(context, R.color.light_green_success))
@@ -37,6 +34,7 @@ class PlacesAdapter(
         } else {
             view.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent))
             nameTextView.text = "Guess Location #${position + 1}"
+            addressTextView.text = ""
         }
 
         return view
