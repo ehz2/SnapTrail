@@ -137,6 +137,10 @@
         android:name="com.example.snaptrail.ui.home.game.HostGameFragment"
         android:label="Ongoing Trail"
         tools:layout="@layout/fragment_host_game">
+        <action
+            android:id="@+id/action_hostGameFragment_to_playerCompleteFragment"
+            app:destination="@+id/playerCompleteFragment">
+        </action>
         <argument
             android:name="gameId"
             app:argType="string" />
@@ -167,9 +171,20 @@
         android:name="com.example.snaptrail.ui.home.game.PlayerGameFragment"
         android:label="Explore!"
         tools:layout="@layout/fragment_player_game">
+        <action
+            android:id="@+id/action_playerGameFragment_to_playerCompleteFragment"
+            app:destination="@id/playerCompleteFragment" />
         <argument
             android:name="gameId"
             app:argType="string" />
+    </fragment>
+
+    <!-- PlayerCompleteFragment -->
+    <fragment
+        android:id="@+id/playerCompleteFragment"
+        android:name="com.example.snaptrail.ui.home.game.PlayerCompleteFragment"
+        android:label="Complete!"
+        tools:layout="@layout/fragment_player_complete">
     </fragment>
 
 </navigation>

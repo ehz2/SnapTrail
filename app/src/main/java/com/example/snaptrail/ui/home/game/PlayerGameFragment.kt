@@ -2,9 +2,9 @@ package com.example.snaptrail.ui.home.game
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.findNavController
@@ -18,10 +18,19 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import android.util.Log
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.snaptrail.MainActivity
+import com.example.snaptrail.ui.home.create.locations.LocationData
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.maps.model.LatLng
+import android.location.Location
+import android.widget.LinearLayout
 
 class PlayerGameFragment : Fragment(), OnMapReadyCallback {
 
@@ -37,6 +46,10 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var googleMap: GoogleMap
+
+    private val locationPoints = mutableMapOf<String, Int>()
+
+    private val completedLocations = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +69,17 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         return binding.root
     }
 
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            // Get current location when photo is taken
+            getCurrentLocation { location ->
+                checkLocationProximity(location)
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -68,7 +92,16 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         binding.btnTakePhoto.setOnClickListener {
-            // Camera stuff later
+            // Request camera permission if not granted
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE)
+            } else {
+                cameraLauncher.launch(null)
+            }
         }
 
         binding.btnLeaveGame.setOnClickListener {
@@ -139,11 +172,63 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun updateUI() {
+        // Update comments
+        gameModel?.comments?.let { comments ->
+            binding.tvComments.text = comments
+        }
+
+        // Populate location entries
+        binding.locationsContainer.removeAllViews()
+        gameModel?.locations?.forEach { location ->
+            addLocationEntry(location)
+        }
+
         // Update the map if needed
         if (::googleMap.isInitialized) {
             googleMap.clear()
             setupMap()
         }
+    }
+
+    private fun addLocationEntry(location: LocationData) {
+        val locationEntryLayout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        // Points TextView
+        val pointsTextView = TextView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = 16
+            }
+            text = locationPoints[location.placeId]?.let { "$it pts" } ?: ""
+            setTextColor(Color.BLUE)
+        }
+
+        // Location Name TextView
+        val locationTextView = TextView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+            text = location.name
+            setPadding(16, 16, 16, 16)
+            setTextColor(if (completedLocations.contains(location.placeId))
+                Color.GREEN else Color.BLACK)
+            setBackgroundResource(R.drawable.location_entry_background)
+        }
+
+        locationEntryLayout.addView(pointsTextView)
+        locationEntryLayout.addView(locationTextView)
+
+        binding.locationsContainer.addView(locationEntryLayout)
     }
 
     override fun onRequestPermissionsResult(
@@ -219,5 +304,116 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         super.onDestroyView()
         listenerRegistration?.remove()
         _binding = null
+    }
+
+    private fun getCurrentLocation(callback: (Location) -> Unit) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+            return
+        }
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location?.let { callback(it) }
+        }
+    }
+
+    private fun checkLocationProximity(currentLocation: Location) {
+        gameModel?.locations?.forEach { savedLocation ->
+            val savedLatLng = LatLng(savedLocation.latitude, savedLocation.longitude)
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                currentLocation.latitude,
+                currentLocation.longitude,
+                savedLatLng.latitude,
+                savedLatLng.longitude,
+                results
+            )
+
+            if (results[0] <= 200) {
+                val points = calculateLocationPoints(results[0])
+
+                // Only award points if not already scored for this location
+                if (!locationPoints.containsKey(savedLocation.placeId)) {
+                    locationPoints[savedLocation.placeId] = points
+                    Toast.makeText(context, "Found location! Earned $points points", Toast.LENGTH_SHORT).show()
+                    completedLocations.add(savedLocation.placeId)
+                    updatePlayerProgress(savedLocation.placeId, points)
+                    updateLocationEntryColor(savedLocation.placeId)
+
+                    if (completedLocations.size == gameModel?.locations?.size) {
+                        val bundle = Bundle().apply {
+                            putString("gameId", gameId)
+                        }
+                        gameModel!!.completedPlayers + 1
+                        Log.d("PlayerGameFragment", "Navigating with gameId: $gameId")
+                        findNavController().navigate(R.id.action_playerGameFragment_to_playerCompleteFragment, bundle)
+                    }
+                    return
+                }
+            }
+        }
+
+        // No location within 200 meters
+        Toast.makeText(context, "Nope! Not quite the location!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun updatePlayerProgress(placeId: String, points: Int) {
+        userId?.let { currentUserId ->
+            gameModel?.let { model ->
+                // Increment player's progress and total points
+                val currentProgress = model.playerProgress.getOrDefault(currentUserId, 0)
+                val currentPoints = model.playerPoints.getOrDefault(currentUserId, 0)
+
+                model.playerProgress[currentUserId] = currentProgress + 1
+                model.playerPoints[currentUserId] = currentPoints + points
+
+                // Update the game document in Firestore
+                db.collection("games").document(gameId)
+                    .update(
+                        mapOf(
+                            "playerProgress" to model.playerProgress,
+                            "playerPoints" to model.playerPoints
+                        )
+                    )
+                    .addOnSuccessListener {
+                        Log.d("PlayerGameFragment", "Player progress and points updated")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("PlayerGameFragment", "Failed to update progress", e)
+                    }
+            }
+        }
+    }
+
+    private fun updateLocationEntryColor(placeId: String) {
+        for (i in 0 until binding.locationsContainer.childCount) {
+            val entryView = binding.locationsContainer.getChildAt(i) as? TextView
+            val location = gameModel?.locations?.get(i)
+            if (location?.placeId == placeId) {
+                entryView?.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
+                break
+            }
+        }
+    }
+
+    private fun calculateLocationPoints(distance: Float): Int {
+        return when {
+            distance <= 50 -> 1000
+            distance <= 200 -> {
+                // Linear interpolation between 500-1000 points from 50-200 meters
+                val interpolatedPoints = 1000 - ((distance - 50) / 150 * 500).toInt()
+                interpolatedPoints.coerceIn(500, 1000)
+            }
+            else -> 0
+        }
+    }
+
+    companion object {
+        private const val CAMERA_PERMISSION_REQUEST_CODE = 100
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 101
     }
 }

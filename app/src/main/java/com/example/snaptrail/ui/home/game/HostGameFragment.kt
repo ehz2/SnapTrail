@@ -1,5 +1,6 @@
 package com.example.snaptrail.ui.home.game
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.*
@@ -79,13 +80,22 @@ class HostGameFragment : Fragment() {
         gameModel?.let { model ->
             binding.tvTrailName.text = model.trailName
 
-            // Exclude the host from the player list
-            val playerProgressList = model.players.filter { it != model.hostId }.map { playerId ->
-                val playerName = model.playerNames[playerId] ?: "Unknown"
-                val progress = model.playerProgress[playerId] ?: 0
-                val totalLocations = model.locations.size
-                "$playerName: $progress/$totalLocations"
+            if (model.completedPlayers.size == model.players.size && !model.isGameEnded) {
+                model.isGameEnded = true
+                endGame()
             }
+
+            // Include points in player progress list
+            val playerProgressList = model.players
+                .filter { it != model.hostId }
+                .map { playerId ->
+                    val playerName = model.playerNames[playerId] ?: "Unknown"
+                    val progress = model.playerProgress[playerId] ?: 0
+                    val points = model.playerPoints[playerId] ?: 0
+                    val totalLocations = model.locations.size
+                    "$playerName: $progress/$totalLocations (${points}pts)"
+                }
+
             playersAdapter.clear()
             playersAdapter.addAll(playerProgressList)
             playersAdapter.notifyDataSetChanged()
@@ -104,16 +114,25 @@ class HostGameFragment : Fragment() {
     }
 
     private fun endGame() {
-        // Delete the game document
-        db.collection("games").document(gameId)
-            .delete()
-            .addOnSuccessListener {
-                Toast.makeText(context, "Game ended.", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.nav_home)
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to end game: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+
+        // Clear saved locations in SharedPreferences
+        val sharedPrefs = requireContext().getSharedPreferences("Locations", Context.MODE_PRIVATE)
+        sharedPrefs.edit().remove("saved_locations").apply()
+
+        gameModel?.let { model ->
+            db.collection("games").document(gameId)
+                .set(model)
+                .addOnSuccessListener {
+                    val bundle = Bundle().apply {
+                        putStringArrayList("playerIds", ArrayList(model.players))
+                        putString("gameId", gameId)
+                    }
+                    findNavController().navigate(R.id.action_hostGameFragment_to_playerCompleteFragment, bundle)
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(context, "Failed to end game: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 
     override fun onResume() {
