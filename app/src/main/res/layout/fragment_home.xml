@@ -1,130 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:gravity="center"
         android:padding="16dp">
 
-        <!-- TextView -->
-        <TextView
-            android:id="@+id/textView6"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="New Trail"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:textColor="@color/black"
-            android:textSize="35sp"
-            android:fontFamily="@font/ptserif_bold"/>
+            android:padding="16dp">
 
-        <!-- Icon (Vector Drawable) -->
-        <ImageView
-            android:id="@+id/create_icon"
+            <!-- TextView -->
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Trail"
+                android:gravity="center"
+                android:textColor="@color/black"
+                android:textSize="35sp"
+                android:fontFamily="@font/ptserif_bold" />
+
+            <!-- Icon (Vector Drawable) -->
+            <ImageView
+                android:id="@+id/create_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/baseline_create_24"
+                android:contentDescription="Create Icon" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnCreateTrail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/baseline_create_24"
-            android:contentDescription="Create Icon" />
-    </LinearLayout>
+            android:layout_marginBottom="50dp"
+            android:text="Create Trail"
+            android:textColor="@color/white"
+            android:fontFamily="@font/ptserif_regular" />
 
-
-    <Button
-        android:id="@+id/btnCreateTrail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
-        android:text="Create Trail"
-        android:fontFamily="@font/ptserif_regular"/>
-
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="60dp"
-        android:layout_marginBottom="30dp">
-
-        <!-- Left Line -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"
-            android:background="#80000000" />
-
-        <!-- 'OR' Text -->
-        <TextView
-            android:id="@+id/or_text"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="OR"
-            android:textSize="14sp"
-            android:textColor="#80000000"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:fontFamily="@font/ptserif_bold"/>
-
-        <!-- Right Line -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1"
-            android:background="#80000000" />
-
-    </LinearLayout>
-
-
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="16dp">
-
-        <!-- TextView -->
-        <TextView
-            android:id="@+id/textView5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="35sp"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:textColor="@color/black"
-            android:text="Existing Trail"
-            android:fontFamily="@font/ptserif_bold"/>
+            android:padding="60dp"
+            android:layout_marginBottom="30dp">
 
-        <!-- Icon (Vector Drawable) -->
-        <ImageView
-            android:id="@+id/search_icon"
-            android:layout_width="wrap_content"
+            <!-- Left Line -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#80000000" />
+
+            <!-- 'OR' Text -->
+            <TextView
+                android:id="@+id/or_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OR"
+                android:textSize="14sp"
+                android:textColor="#80000000"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/ptserif_bold" />
+
+            <!-- Right Line -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#80000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/baseline_search_24"
-            android:contentDescription="Search Icon" />
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="16dp">
+
+            <!-- TextView -->
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="35sp"
+                android:gravity="center"
+                android:textColor="@color/black"
+                android:text="Existing Trail"
+                android:fontFamily="@font/ptserif_bold" />
+
+            <!-- Icon (Vector Drawable) -->
+            <ImageView
+                android:id="@+id/search_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/baseline_search_24"
+                android:contentDescription="Search Icon" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/joinCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter the game code"
+            android:fontFamily="@font/ptserif_italic"
+            android:background="@color/white" />
+
+        <Button
+            android:id="@+id/btnJoinTrail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="Join Trail"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/ptserif_regular" />
     </LinearLayout>
-
-
-    <EditText
-        android:id="@+id/joinCode"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter the game code"
-        android:fontFamily="@font/ptserif_italic"
-        android:background="@color/fulvous"/>
-
-    <Button
-        android:id="@+id/btnJoinTrail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Join Trail"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/ptserif_regular"/>
-</LinearLayout>
+</ScrollView>

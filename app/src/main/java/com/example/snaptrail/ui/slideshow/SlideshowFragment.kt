@@ -30,9 +30,10 @@ class SlideshowFragment : Fragment() {
 
         val user = Firebase.auth.currentUser
 
-        // Show currently logged-in user's email in the textView
+        // Show user name and stats in the textViews
         user?.let {
             loadUsernameFromFirestore(it.uid)
+            loadPlayerStatistics(it.uid)
         }
 
         // Set up logout button
@@ -67,6 +68,34 @@ class SlideshowFragment : Fragment() {
             .addOnFailureListener { exception ->
                 binding.user.text = "Hello"
                 Toast.makeText(requireContext(), "Failed to load username: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun loadPlayerStatistics(uid: String) {
+        val userDoc = firestore.collection("users").document(uid)
+        userDoc.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // Fetch values from Firestore
+                    val easyTrails = document.getLong("easy") ?: 0
+                    val mediumTrails = document.getLong("medium") ?: 0
+                    val hardTrails = document.getLong("hard") ?: 0
+                    val successfulPlaces = document.getLong("successfulPlacesFound") ?: 0
+
+                    // Update text views
+                    binding.easyTrailsTextView.text = "Easy trails: $easyTrails"
+                    binding.mediumTrailsTextView.text = "Medium trails: $mediumTrails"
+                    binding.hardTrailsTestView.text = "Hard trails: $hardTrails"
+
+                    val totalTrails = easyTrails + mediumTrails + hardTrails
+                    binding.totalTrailsCompletedTextView.text = "Total trails completed: $totalTrails"
+                    binding.numberOfLocationsFound.text = "Number of locations found: $successfulPlaces"
+                } else {
+                    Toast.makeText(requireContext(), "No user data found.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Toast.makeText(requireContext(), "Failed to load statistics: ${exception.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
