@@ -68,6 +68,15 @@ class HostGameFragment : Fragment() {
                 if (snapshot != null && snapshot.exists()) {
                     gameModel = snapshot.toObject(GameModel::class.java)
                     updateUI()
+
+                    // Check if game has ended
+                    if (gameModel?.gameEnded == true) {
+                        navigateToLeaderboard()
+                    }
+                } else {
+                    // Game document has been deleted
+                    Toast.makeText(context, "Game has been ended.", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.nav_home)
                 }
             }
 
@@ -80,9 +89,19 @@ class HostGameFragment : Fragment() {
         gameModel?.let { model ->
             binding.tvTrailName.text = model.trailName
 
-            if (model.completedPlayers.size == model.players.size && !model.isGameEnded) {
-                model.isGameEnded = true
-                endGame()
+            // Exclude the host from the players list
+            val nonHostPlayers = model.players.filter { it != model.hostId }
+
+            if (model.completedPlayers.size == nonHostPlayers.size && !model.gameEnded) {
+                // Update 'gameEnded' in Firestore
+                db.collection("games").document(gameId)
+                    .update("gameEnded", true)
+                    .addOnSuccessListener {
+                        Log.d("HostGameFragment", "Game ended successfully.")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("HostGameFragment", "Failed to end game: ${e.message}", e)
+                    }
             }
 
             // Include points in player progress list
@@ -133,6 +152,13 @@ class HostGameFragment : Fragment() {
                     Toast.makeText(context, "Failed to end game: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         }
+    }
+
+    private fun navigateToLeaderboard() {
+        val bundle = Bundle().apply {
+            putString("gameId", gameId)
+        }
+        findNavController().navigate(R.id.action_hostGameFragment_to_playerCompleteFragment, bundle)
     }
 
     override fun onResume() {

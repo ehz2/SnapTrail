@@ -31,6 +31,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.maps.model.LatLng
 import android.location.Location
 import android.widget.LinearLayout
+import com.google.firebase.firestore.FieldValue
 
 class PlayerGameFragment : Fragment(), OnMapReadyCallback {
 
@@ -122,6 +123,11 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
                         gameModel = snapshot.toObject(GameModel::class.java)
                         if (gameModel != null) {
                             updateUI()
+
+                            // Check if game has ended
+                            if (gameModel?.gameEnded == true) {
+                                navigateToLeaderboard()
+                            }
                         }
                     } else {
                         // Game document has been deleted
@@ -300,6 +306,13 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         (activity as MainActivity).unlockDrawer()
     }
 
+    private fun navigateToLeaderboard() {
+        val bundle = Bundle().apply {
+            putString("gameId", gameId)
+        }
+        findNavController().navigate(R.id.action_playerGameFragment_to_playerCompleteFragment, bundle)
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         listenerRegistration?.remove()
@@ -345,12 +358,21 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
                     updateLocationEntryColor(savedLocation.placeId)
 
                     if (completedLocations.size == gameModel?.locations?.size) {
-                        val bundle = Bundle().apply {
-                            putString("gameId", gameId)
+                        userId?.let { currentUserId ->
+                            db.collection("games").document(gameId)
+                                .update("completedPlayers", FieldValue.arrayUnion(currentUserId))
+                                .addOnSuccessListener {
+                                    Log.d("PlayerGameFragment", "Player added to completedPlayers")
+                                    // Navigate to leaderboard
+                                    val bundle = Bundle().apply {
+                                        putString("gameId", gameId)
+                                    }
+                                    findNavController().navigate(R.id.action_playerGameFragment_to_playerCompleteFragment, bundle)
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.e("PlayerGameFragment", "Failed to update completedPlayers", e)
+                                }
                         }
-                        gameModel!!.completedPlayers + 1
-                        Log.d("PlayerGameFragment", "Navigating with gameId: $gameId")
-                        findNavController().navigate(R.id.action_playerGameFragment_to_playerCompleteFragment, bundle)
                     }
                     return
                 }

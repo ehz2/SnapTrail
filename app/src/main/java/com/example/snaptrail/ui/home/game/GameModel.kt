@@ -15,5 +15,5 @@ data class GameModel(
     var playerProgress: MutableMap<String, Int> = mutableMapOf(),
     var playerPoints: MutableMap<String, Int> = mutableMapOf(),
     var completedPlayers: MutableList<String> = mutableListOf(),
-    var isGameEnded: Boolean = false
+    var gameEnded: Boolean = false
 )
