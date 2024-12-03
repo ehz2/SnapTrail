@@ -11,9 +11,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
+        android:textColor="@color/black"
         android:text="Register"
         android:textSize="30dp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:fontFamily="@font/ptserif_bold"/>
 
     <!-- New Username Field -->
     <EditText
@@ -22,7 +24,10 @@
         android:layout_height="wrap_content"
         android:hint="Username"
         android:autofillHints="username"
-        android:inputType="textPersonName" />
+        android:inputType="textPersonName"
+        android:background="@color/fulvous"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/ptserif_italic"/>
 
     <EditText
         android:id="@+id/email"
@@ -30,7 +35,10 @@
         android:layout_height="wrap_content"
         android:autofillHints="emailAddress"
         android:inputType="textEmailAddress"
-        android:hint="Email"/>
+        android:hint="Email"
+        android:background="@color/fulvous"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/ptserif_italic"/>
 
     <EditText
         android:id="@+id/password"
@@ -38,7 +46,9 @@
         android:layout_height="wrap_content"
         android:autofillHints="password"
         android:inputType="textPassword"
-        android:hint="Password"/>
+        android:background="@color/fulvous"
+        android:hint="Password"
+        android:fontFamily="@font/ptserif_italic"/>
 
     <TextView
         android:id="@+id/requirementLength"
@@ -47,7 +57,8 @@
         android:text="• At least 8 characters"
         android:textColor="@android:color/holo_red_dark"
         android:textSize="14sp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/ptserif_bolditalic"/>
 
     <TextView
         android:id="@+id/requirementUppercase"
@@ -56,7 +67,8 @@
         android:text="• Contains an uppercase letter"
         android:textColor="@android:color/holo_red_dark"
         android:textSize="14sp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/ptserif_bolditalic"/>
 
     <TextView
         android:id="@+id/requirementLowercase"
@@ -65,7 +77,8 @@
         android:text="• Contains a lowercase letter"
         android:textColor="@android:color/holo_red_dark"
         android:textSize="14sp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/ptserif_bolditalic"/>
 
     <TextView
         android:id="@+id/requirementNumber"
@@ -74,7 +87,8 @@
         android:text="• Contains a number"
         android:textColor="@android:color/holo_red_dark"
         android:textSize="14sp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/ptserif_bolditalic"/>
 
     <Button
         android:id="@+id/continue_btn"
@@ -82,12 +96,15 @@
         android:layout_height="wrap_content"
         android:text="Register"
         android:textSize="18sp"
-        android:layout_margin="20dp"/>
+        android:layout_margin="20dp"
+        android:fontFamily="@font/ptserif_regular"/>
 
     <TextView
         android:id="@+id/move"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"/>
+        android:text="Already have an account? Login"
+        android:textColor="@android:color/holo_purple"
+        android:fontFamily="@font/ptserif_italic"/>
 
 </LinearLayout>

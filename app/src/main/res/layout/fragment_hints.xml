@@ -17,6 +17,7 @@
             android:layout_margin="15dp"
             android:text="Guess The location based on the given hints"
             android:textColor="@color/black"
+            android:fontFamily="@font/ptserif_bold"
             android:textSize="25sp"
             android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
@@ -25,6 +26,9 @@
 
         <TextView
             android:id="@+id/hints"
+            android:background="@color/fulvous"
+            android:fontFamily="@font/ptserif_italic"
+            android:textColor="@color/black"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="15dp"
@@ -39,6 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
             android:text="Reveal Place"
+            android:fontFamily="@font/ptserif_italic"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/hints" />
 
@@ -46,6 +51,7 @@
             android:id="@+id/clickPicture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/ptserif_italic"
             android:layout_marginEnd="48dp"
             android:text="Click Picture"
             app:layout_constraintEnd_toEndOf="parent"
