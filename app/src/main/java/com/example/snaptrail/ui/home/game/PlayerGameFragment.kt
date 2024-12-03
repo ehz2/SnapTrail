@@ -1,6 +1,8 @@
 package com.example.snaptrail.ui.home.game
 
 import android.Manifest
+import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -17,6 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.snaptrail.MainActivity
 import com.example.snaptrail.R
@@ -58,10 +61,11 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
     private var lastKnownLocation: Location? = null
     private val circleOverlays = mutableMapOf<String, Circle>()
     private var hasAdjustedCameraToUserLocation = false
+    private lateinit var gameViewModel: GameViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        retainInstance = true
         // Restore circle centers and last known location if available
         savedInstanceState?.let { bundle ->
             val circleCentersList = bundle.getParcelableArrayList<Bundle>("circleCenters")
@@ -81,6 +85,7 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
                     longitude = lng
                 }
             }
+            println("xd: Lat is $lat Long is ${lng}")
         }
 
         // Intercept back button press
@@ -131,9 +136,12 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        gameViewModel = ViewModelProvider(requireActivity()).get(GameViewModel::class.java)
         gameId = arguments?.getString("gameId") ?: ""
-
+        if(gameViewModel.gameId!=null){
+            gameId = gameViewModel.gameId!!
+        }
+        // Restore last known location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         // Get last known location
@@ -206,6 +214,7 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
 
         // Re-add user location marker if necessary
         if (userLocationMarker == null && lastKnownLocation != null) {
+            Log.e("xd:","I am here")
             updateUserLocationOnMap(lastKnownLocation!!)
         }
     }
@@ -472,10 +481,13 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         if (userLocationMarker == null && lastKnownLocation != null) {
             updateUserLocationOnMap(lastKnownLocation!!)
         }
+
     }
 
     override fun onPause() {
         super.onPause()
+        userLocationMarker = null
+        Log.e("xd:","on Pause is called")
         // Re-enable the navigation drawer
         (activity as MainActivity).unlockDrawer()
         stopLocationUpdates()
@@ -668,7 +680,21 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
             outState.putDouble("lastKnownLatitude", it.latitude)
             outState.putDouble("lastKnownLongitude", it.longitude)
         }
+        gameViewModel.lat = lastKnownLocation?.latitude
+        gameViewModel.lng = lastKnownLocation?.longitude
     }
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        // Lock orientation to portrait (or landscape as needed)
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        // Restore orientation to default
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    }
+
 
     companion object {
         private const val CAMERA_PERMISSION_REQUEST_CODE = 100

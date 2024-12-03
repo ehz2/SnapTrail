@@ -13,6 +13,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.example.snaptrail.MainActivity
 import com.example.snaptrail.databinding.FragmentPlayerLobbyBinding
 import com.google.firebase.firestore.FieldValue
@@ -28,7 +29,7 @@ class PlayerLobbyFragment : Fragment() {
     private var gameId: String = ""
     private var gameModel: GameModel? = null
     private var listenerRegistration: ListenerRegistration? = null
-
+    private lateinit var gameViewModel: GameViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Intercept back button press
@@ -49,7 +50,10 @@ class PlayerLobbyFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        gameViewModel = ViewModelProvider(requireActivity()).get(GameViewModel::class.java)
+        if(gameViewModel.gameId!=null){
+            gameId = gameViewModel.gameId!!
+        }
         gameId = arguments?.getString("gameId") ?: ""
 
         // Set the game code

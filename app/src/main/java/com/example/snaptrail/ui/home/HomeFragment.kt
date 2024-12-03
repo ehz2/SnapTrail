@@ -6,10 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.snaptrail.R
 import com.example.snaptrail.databinding.FragmentHomeBinding
 import com.example.snaptrail.ui.home.game.GameModel
+import com.example.snaptrail.ui.home.game.GameViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -21,11 +23,14 @@ class HomeFragment : Fragment() {
     private val db = FirebaseFirestore.getInstance()
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
 
+    private lateinit var gameViewModel: GameViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        gameViewModel = ViewModelProvider(requireActivity()).get(GameViewModel::class.java)
         return binding.root
     }
 
@@ -79,6 +84,8 @@ class HomeFragment : Fragment() {
                                     Toast.makeText(context, "Failed to join game: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
                         } else {
+                            //Put game id in view model
+                            gameViewModel.gameId = gameCode
                             // Player has already joined, navigate to PlayerLobbyFragment
                             val bundle = Bundle()
                             bundle.putString("gameId", gameCode)
