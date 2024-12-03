@@ -133,25 +133,16 @@ class HostGameFragment : Fragment() {
     }
 
     private fun endGame() {
-
-        // Clear saved locations in SharedPreferences
-        val sharedPrefs = requireContext().getSharedPreferences("Locations", Context.MODE_PRIVATE)
-        sharedPrefs.edit().remove("saved_locations").apply()
-
-        gameModel?.let { model ->
-            db.collection("games").document(gameId)
-                .set(model)
-                .addOnSuccessListener {
-                    val bundle = Bundle().apply {
-                        putStringArrayList("playerIds", ArrayList(model.players))
-                        putString("gameId", gameId)
-                    }
-                    findNavController().navigate(R.id.action_hostGameFragment_to_playerCompleteFragment, bundle)
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(context, "Failed to end game: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-        }
+        // Delete the game document
+        db.collection("games").document(gameId)
+            .delete()
+            .addOnSuccessListener {
+                // Navigate the host back to home
+                findNavController().navigate(R.id.nav_home)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to end game: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun navigateToLeaderboard() {

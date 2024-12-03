@@ -403,12 +403,26 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
                     )
                     .addOnSuccessListener {
                         Log.d("PlayerGameFragment", "Player progress and points updated")
+                        // After updating the game, update the user's successfulPlacesFound
+                        incrementSuccessfulPlacesFound(currentUserId)
                     }
                     .addOnFailureListener { e ->
                         Log.e("PlayerGameFragment", "Failed to update progress", e)
                     }
             }
         }
+    }
+
+    private fun incrementSuccessfulPlacesFound(userId: String) {
+        val userDocRef = db.collection("users").document(userId)
+
+        userDocRef.update("successfulPlacesFound", FieldValue.increment(1))
+            .addOnSuccessListener {
+                Log.d("PlayerGameFragment", "successfulPlacesFound incremented")
+            }
+            .addOnFailureListener { e ->
+                Log.e("PlayerGameFragment", "Failed to increment successfulPlacesFound", e)
+            }
     }
 
     private fun updateLocationEntryColor(placeId: String) {

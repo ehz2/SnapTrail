@@ -80,6 +80,10 @@ class PlayerCompleteFragment : Fragment() {
                             binding.btnConfirm.visibility = View.GONE
                         }
                     }
+                } else {
+                    // Game document has been deleted, navigate back to home
+                    Toast.makeText(context, "Game has ended.", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.nav_home)
                 }
             }
     }
@@ -88,20 +92,26 @@ class PlayerCompleteFragment : Fragment() {
         db.collection("games").document(gameId)
             .get()
             .addOnSuccessListener { document ->
-                val gameModel = document.toObject(GameModel::class.java)
-                if (gameModel != null && gameModel.gameEnded) {
-                    // Delete the game document
-                    db.collection("games").document(gameId)
-                        .delete()
-                        .addOnSuccessListener {
-                            findNavController().navigate(R.id.nav_home)
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(context, "Failed to delete game: ${e.message}", Toast.LENGTH_SHORT).show()
-                            findNavController().navigate(R.id.nav_home)
-                        }
+                if (document.exists()) {
+                    val gameModel = document.toObject(GameModel::class.java)
+                    if (gameModel != null && gameModel.gameEnded) {
+                        // Delete the game document
+                        db.collection("games").document(gameId)
+                            .delete()
+                            .addOnSuccessListener {
+                                findNavController().navigate(R.id.nav_home)
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Failed to delete game: ${e.message}", Toast.LENGTH_SHORT).show()
+                                findNavController().navigate(R.id.nav_home)
+                            }
+                    } else {
+                        Toast.makeText(context, "Cannot end game until all players have finished.", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    Toast.makeText(context, "Cannot end game until all players have finished.", Toast.LENGTH_SHORT).show()
+                    // Game document does not exist, navigate back to home
+                    Toast.makeText(context, "Game has already ended.", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.nav_home)
                 }
             }
             .addOnFailureListener { e ->

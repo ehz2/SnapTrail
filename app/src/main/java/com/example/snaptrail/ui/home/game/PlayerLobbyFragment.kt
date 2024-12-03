@@ -15,6 +15,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.example.snaptrail.MainActivity
 import com.example.snaptrail.databinding.FragmentPlayerLobbyBinding
+import com.google.firebase.firestore.FieldValue
 
 class PlayerLobbyFragment : Fragment() {
 
@@ -53,6 +54,28 @@ class PlayerLobbyFragment : Fragment() {
 
         // Set the game code
         binding.tvGameCode.text = "Joined Trail: $gameId"
+
+        // Fetch the player's username and add them to the game
+        if (userId != null) {
+            val userDocRef = db.collection("users").document(userId)
+            userDocRef.get().addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val username = documentSnapshot.getString("username") ?: "Unknown"
+
+                    // Add player to the game with username
+                    addPlayerToGame(gameId, userId, username)
+                } else {
+                    Toast.makeText(context, "User data not found.", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.nav_home)
+                }
+            }.addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to fetch user data: ${e.message}", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.nav_home)
+            }
+        } else {
+            Toast.makeText(context, "User not authenticated.", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.nav_home)
+        }
 
         // Listen for changes in the game data
         listenerRegistration = db.collection("games").document(gameId)
@@ -101,6 +124,20 @@ class PlayerLobbyFragment : Fragment() {
 
         binding.btnLeaveGame.setOnClickListener {
             showLeaveGameConfirmation()
+        }
+    }
+
+    private fun addPlayerToGame(gameId: String, userId: String, username: String) {
+        val gameDocRef = db.collection("games").document(gameId)
+
+        gameDocRef.update(
+            "players", FieldValue.arrayUnion(userId),
+            "playerNames.$userId", username
+        ).addOnSuccessListener {
+            // Player added successfully
+        }.addOnFailureListener { e ->
+            Toast.makeText(context, "Failed to join game: ${e.message}", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.nav_home)
         }
     }
 
