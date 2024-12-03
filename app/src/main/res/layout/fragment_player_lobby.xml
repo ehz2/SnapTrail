@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:gravity="center"
     android:padding="16dp">
 
     <!-- Display the trail name -->
@@ -29,8 +30,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Joined Trail: "
-        android:textSize="18sp"
+        android:textSize="30sp"
         android:textStyle="bold"
+        android:fontFamily="@font/ptserif_bold"
         android:layout_marginBottom="16dp"/>
 
     <TextView
@@ -39,6 +41,7 @@
         android:text="Waiting for host to start the game..."
         android:textSize="23sp"
         android:textStyle="bold"
+        android:fontFamily="@font/ptserif_italic"
         android:layout_marginBottom="16dp"/>
 
     <!-- Button to leave the game -->
@@ -47,7 +50,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Leave Trail"
+        android:fontFamily="@font/ptserif_italic"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:backgroundTint="@android:color/holo_red_light" />
 </LinearLayout>

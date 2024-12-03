@@ -31,7 +31,7 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Delete location"
         android:padding="8dp"
-        android:src="@drawable/ic_launcher_foreground"
+        android:src="@drawable/baseline_delete_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

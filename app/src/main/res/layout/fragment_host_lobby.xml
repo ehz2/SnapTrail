@@ -24,6 +24,7 @@
     <!-- Display the game code -->
     <TextView
         android:id="@+id/tvGameCode"
+        android:fontFamily="@font/ptserif_bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Trail Code: "
@@ -53,12 +54,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Start Trail"
+            android:fontFamily="@font/ptserif_italic"
             android:layout_marginEnd="8dp"
             android:backgroundTint="@android:color/holo_green_light"/>
 
         <!-- Button to delete the game -->
         <Button
             android:id="@+id/btnDeleteGame"
+            android:fontFamily="@font/ptserif_italic"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
