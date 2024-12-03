@@ -12,5 +12,8 @@ data class GameModel(
     var locations: List<LocationData> = listOf(),
     var players: MutableList<String> = mutableListOf(),
     var playerNames: MutableMap<String, String> = mutableMapOf(),
-    var playerProgress: MutableMap<String, Int> = mutableMapOf()
+    var playerProgress: MutableMap<String, Int> = mutableMapOf(),
+    var playerPoints: MutableMap<String, Int> = mutableMapOf(),
+    var completedPlayers: MutableList<String> = mutableListOf(),
+    var isGameEnded: Boolean = false
 )
