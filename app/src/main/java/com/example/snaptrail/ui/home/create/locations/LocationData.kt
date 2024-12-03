@@ -5,9 +5,9 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class LocationData(
-    val placeId: String,
-    val name: String,
-    val address: String,
-    val latitude: Double,
-    val longitude: Double
+    var placeId: String = "",
+    var name: String = "",
+    var address: String = "",
+    var latitude: Double = 0.0,
+    var longitude: Double = 0.0
 ) : Parcelable

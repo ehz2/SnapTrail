@@ -97,4 +97,7 @@ dependencies {
 
     // Google AI
     implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
+
+    //Confetti animation
+    implementation("nl.dionsegijn:konfetti-xml:2.0.4")
 }

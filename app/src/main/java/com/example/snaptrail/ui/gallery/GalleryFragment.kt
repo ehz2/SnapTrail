@@ -35,6 +35,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlin.properties.Delegates
 
 class GalleryFragment : Fragment(), OnMapReadyCallback {
@@ -53,6 +57,7 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var latitude by Delegates.notNull<Double>()
     private var longitude by Delegates.notNull<Double>()
+    private val firestore = Firebase.firestore
 
     //Use Activity Result Launcher for permission
     private lateinit var requestPermissionLauncher:ActivityResultLauncher<String>
@@ -134,6 +139,8 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
             //Clear the entries in the view Model because the user wants to start a new trial
             autoChallengeViewModel.displayList.clear()
             autoChallengeViewModel.placesList.clear()
+            autoChallengeViewModel.successfulPlaces.clear()
+
             val navController = findNavController()
             navController.navigate(R.id.nav_autoChallenge, bundle)
             Toast.makeText(context,"JOIN CHALLENGE WITH DIFFICULTY - ${difficulty}",Toast.LENGTH_SHORT).show()
@@ -142,8 +149,59 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
         if(!locationObtained) {
             challengeBtn.visibility = View.GONE
         }
+
+        //Check for number of places found and update database
+        parentFragmentManager.setFragmentResultListener(AutoChallengeFragment.TOTAL_PLACES_BUNDLE_KEY,
+            viewLifecycleOwner){_, bundle ->
+            val totalPlaces = bundle.getInt(AutoChallengeFragment.TOTAL_PLACES_KEY)
+            //Update the Firestore
+            val user = Firebase.auth.currentUser
+            user?.let{
+                updateSuccesfulPlacesStat(it.uid,totalPlaces.toLong())
+            }
+        }
+        //Check for difficulty mode completed and update database
+        parentFragmentManager.setFragmentResultListener(AutoChallengeFragment.DIFFICULTY_MODE_BUNDLE,
+            viewLifecycleOwner){_,bundle->
+            val numPlaces = bundle.getInt(AutoChallengeFragment.DIFFICULTY_MODE)
+            val user = Firebase.auth.currentUser
+            user?.let{
+                updateDifficultyStat(it.uid,numPlaces)
+            }
+        }
+
         return root
     }
+
+
+    private fun updateDifficultyStat(uid: String,numPlaces:Int){
+        val userStatsDoc = firestore.collection("users").document(uid)
+        when(numPlaces){
+            5 ->{
+                userStatsDoc.update("easy",
+                    FieldValue.increment(1.toLong()))
+            }
+            8->{
+                userStatsDoc.update("medium",
+                    FieldValue.increment(1.toLong()))
+            }
+            12->{
+                userStatsDoc.update("hard",
+                    FieldValue.increment(1.toLong()))
+            }
+        }
+    }
+
+    private fun updateSuccesfulPlacesStat(uid:String,totalPlaces:Long){
+        val userStatsDoc = firestore.collection("users").document(uid)
+        userStatsDoc.update("successfulPlacesFound",
+            FieldValue.increment(totalPlaces)).addOnSuccessListener {
+            Log.d(TAG, "SuccessfulPlaces updated successfully by $totalPlaces")
+        }.addOnFailureListener {exception->
+            Log.e(TAG, "Failed to update SuccessfulPlaces: ${exception.message}")
+        }
+    }
+
     private fun startLocationUpdates(){
         //If permission granted request current location
         println("xd:Hello location Updates")
@@ -163,7 +221,7 @@ class GalleryFragment : Fragment(), OnMapReadyCallback {
             for (location in locationResult.locations){
                 latitude = location.latitude
                 longitude = location.longitude
-                println("xd:${location.latitude}, ${location.longitude}")
+//                println("xd:${location.latitude}, ${location.longitude}")
                 val latLng = LatLng(location.latitude,location.longitude)
                 if(userMarkerLocation == null){
                     //create a new marker

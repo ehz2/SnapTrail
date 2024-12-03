@@ -22,6 +22,7 @@ playServicesLocation = "21.3.0"
 firebaseFirestoreKtx = "25.1.1"
 firebaseFirestore = "25.1.1"
 glide = "5.0.0-rc01"
+roomCompiler = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version = "4.15.1" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

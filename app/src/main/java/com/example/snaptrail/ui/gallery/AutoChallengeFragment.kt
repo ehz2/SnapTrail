@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.snaptrail.BuildConfig
 import com.example.snaptrail.R
+import com.example.snaptrail.ui.gallery.HintsFragment.Companion.PLACE_SUCCESS_KEY
+import com.example.snaptrail.ui.gallery.HintsFragment.Companion.SUCCESSFUL_PLACE_POSITION
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
@@ -29,12 +31,25 @@ import com.google.android.libraries.places.api.net.FetchPlaceResponse
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.api.net.SearchNearbyRequest
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import nl.dionsegijn.konfetti.core.Angle
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.Rotation
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.core.models.Shape
+import nl.dionsegijn.konfetti.core.models.Size
+import nl.dionsegijn.konfetti.xml.KonfettiView
 import java.util.Arrays
 import java.util.Collections
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.math.ln
@@ -45,6 +60,10 @@ class AutoChallengeFragment : Fragment() {
 
     companion object{
         val POSITION = "PositionKey"
+        val TOTAL_PLACES_KEY = "TotalPlacesKey"
+        val TOTAL_PLACES_BUNDLE_KEY = "TotalPlacesBundleKey"
+        val DIFFICULTY_MODE = "DifficultyKey"
+        val DIFFICULTY_MODE_BUNDLE = "DifficultyBundleKey"
     }
     private lateinit var placesClient: PlacesClient
     private lateinit var listPlaces: List<Place>
@@ -52,6 +71,8 @@ class AutoChallengeFragment : Fragment() {
     private lateinit var excludedTypes: List<String>
     private lateinit var searchNearbyRequest: SearchNearbyRequest
     private lateinit var difficulty: String
+    private lateinit var adapter: PlacesAdapter
+    private lateinit var confettiView: KonfettiView
     private var lat by Delegates.notNull<Double>()
     private var lng by Delegates.notNull<Double>()
     private lateinit var autoChallengeViewModel: AutoChallengeViewModel
@@ -77,7 +98,6 @@ class AutoChallengeFragment : Fragment() {
 
         val apiKey = "AIzaSyCemoUw_8sUUxfEecvOceNMtibpoajex3Q"
 //        val apiKey = BuildConfig.MAPS_API_KEY
-        println("xd:api key is ${apiKey}")
         // Log an error if apiKey is not set.
         if (apiKey.isEmpty() || apiKey == "DEFAULT_API_KEY") {
             Log.e("Places test", "No api key")
@@ -102,11 +122,11 @@ class AutoChallengeFragment : Fragment() {
         // Inflate the layout for this fragment
         val view =  inflater.inflate(R.layout.fragment_auto_challenge, container, false)
         val placesListView = view.findViewById<ListView>(R.id.placesListView)
+        confettiView = view.findViewById(R.id.konfettiView)
 
         //If difficulty is passed it means that user wants to start a new challenge
         //Get the user selected difficulty
         val difficultyArg = arguments?.getString(GalleryFragment.DIFFICULITY_KEY)
-
         if(difficultyArg != null){
             //Get difficulty and user location from previous activity
             difficulty = difficultyArg
@@ -115,20 +135,20 @@ class AutoChallengeFragment : Fragment() {
 
             //Response list
             var placeFields: List<Place.Field> =
-                Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS)
+                Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG)
             //Radius
             val center = LatLng(lat, lng)
             val circle = CircularBounds.newInstance(center, 50000.0)
 
             //If the viewModel already has the list
-            if (autoChallengeViewModel.displayList.isNotEmpty()) {
+            if (autoChallengeViewModel.placesList.isNotEmpty()) {
                 // Use the cached list
-                val adapter = ArrayAdapter(
-                    requireContext(),
-                    android.R.layout.simple_list_item_1,
-                    autoChallengeViewModel.displayList
-                )
+                adapter = PlacesAdapter(requireContext(),autoChallengeViewModel.placesList)
                 placesListView.adapter = adapter
+                // Restore previously successful places
+                autoChallengeViewModel.successfulPlaces.forEach { position ->
+                    adapter.setSuccessfulPlace(position)
+                }
             } else {
                 // Make the API call
                 when (difficulty) {
@@ -150,7 +170,6 @@ class AutoChallengeFragment : Fragment() {
                         numPlaces = 12
                     }
                 }
-
                 searchNearbyRequest = SearchNearbyRequest.builder(circle, placeFields).
                 setIncludedTypes(includedTypes).setExcludedTypes(excludedTypes).
                 setMaxResultCount(20).build()
@@ -163,13 +182,10 @@ class AutoChallengeFragment : Fragment() {
                         for(place in finalPlaces){
                             val placeName = "${place.name} - ${place.address}"
                             displayList.add(placeName)
+                            println("xd:${placeName}")
                         }
 
-                        val adapter = ArrayAdapter(
-                            requireContext(),
-                            android.R.layout.simple_list_item_1,
-                            displayList
-                        )
+                        adapter = PlacesAdapter(requireContext(),finalPlaces)
                         autoChallengeViewModel.displayList = displayList
                         autoChallengeViewModel.placesList = finalPlaces
                         placesListView.adapter = adapter
@@ -182,11 +198,7 @@ class AutoChallengeFragment : Fragment() {
             }
         }else{
             //Load the list from view model
-            val adapter = ArrayAdapter(
-                requireContext(),
-                android.R.layout.simple_list_item_1,
-                autoChallengeViewModel.displayList
-            )
+            adapter = PlacesAdapter(requireContext(),autoChallengeViewModel.placesList)
             placesListView.adapter = adapter
         }
         placesListView.setOnItemClickListener{_, _, position, _ ->
@@ -197,21 +209,62 @@ class AutoChallengeFragment : Fragment() {
             val navController = findNavController()
             navController.navigate(R.id.hintsFragment,bundle)
         }
+        // Listen for the result from HintsFragment
+        parentFragmentManager.setFragmentResultListener(HintsFragment.PLACE_SUCCESS_KEY, viewLifecycleOwner) { _, bundle ->
+            val position = bundle.getInt(HintsFragment.SUCCESSFUL_PLACE_POSITION)
+            autoChallengeViewModel.successfulPlaces.add(position)
+            adapter.setSuccessfulPlace(position)
 
-
+            //Check if user successfully found all the places
+            checkComplete()
+        }
         return view
     }
 
+    private fun checkComplete(){
+        Log.e(TAG,"${autoChallengeViewModel.successfulPlaces.size}")
+        if(autoChallengeViewModel.successfulPlaces.size == numPlaces){
+            Log.e(TAG,"${numPlaces}")
+            view?.let {
+                Snackbar.make(
+                    it, "CONGRATUALTIONS! YOU " +
+                            "HAVE SUCCESSFULLY FINISHED THE CHALLENGE",
+                    Snackbar.LENGTH_LONG).show()
+            }
+            // Show confetti
+            repeat(4){
+                showSuccessConfetti()
+            }
+            val resultBundle = Bundle()
+            resultBundle.putInt(DIFFICULTY_MODE, numPlaces)
+            parentFragmentManager.setFragmentResult(DIFFICULTY_MODE_BUNDLE, resultBundle)
+        }
+    }
+    private fun showSuccessConfetti() {
+        Log.e(TAG,"Inside show success")
+        var party = Party(
+            speed = 30f,
+            maxSpeed = 50f,
+            damping = 0.9f,
+            angle = Angle.TOP,
+            spread = 45,
+            size = listOf(Size.SMALL, Size.LARGE, Size.LARGE),
+            shapes = listOf(Shape.Square, Shape.Circle).filterNotNull(),
+            timeToLive = 2000L,
+            rotation = Rotation(),
+            colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+            emitter = Emitter(duration = 2000, TimeUnit.MILLISECONDS).max(30),
+            position = Position.Relative(0.5, 1.0)
+        )
+        confettiView.start(party)
+
+    }
     private suspend fun getPlaces(): List<Place> = suspendCancellableCoroutine { continuation ->
         var resultList = mutableListOf<Place>()
         // Trigger the Places API call
         placesClient.searchNearby(searchNearbyRequest)
             .addOnSuccessListener { response ->
                 // Collect the places into the result list
-//                for (place in response.places) {
-//                    val placeName = "${place.name} - ${place.address}"
-//                    resultList.add(placeName)
-//                }
                 resultList = response.places
                 // Resume the coroutine with the result
                 continuation.resume(resultList)
@@ -222,39 +275,11 @@ class AutoChallengeFragment : Fragment() {
             }
     }
 
-    private fun getLocationPermission() {
-        println("xd:It didnt work")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.e(TAG,"On destroy view is called")
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.e(TAG,"On resume is called")
-
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        Log.e(TAG,"On resume is called")
-
+        val resultBundle = Bundle()
+        resultBundle.putInt(TOTAL_PLACES_KEY, autoChallengeViewModel.successfulPlaces.size)
+        parentFragmentManager.setFragmentResult(TOTAL_PLACES_BUNDLE_KEY, resultBundle)
     }
+
 }
-
-
-//        placesClient.searchNearby(searchNearbyRequest).addOnSuccessListener { response->
-//            listPlaces = response.places
-//            for (place in listPlaces) {
-//                val placeInfo = "${place.name} - ${place.address}"
-//                displayList.add(placeInfo)
-//            }
-//            displayList = displayList.shuffled().take(numPlaces).toMutableList()
-//            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, displayList)
-//            placesListView.adapter = adapter
-//        }.addOnFailureListener {
-//            println("xd:It failed")
-//        }

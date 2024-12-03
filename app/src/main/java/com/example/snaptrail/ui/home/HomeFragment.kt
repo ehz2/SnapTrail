@@ -54,6 +54,12 @@ class HomeFragment : Fragment() {
                 if (document.exists()) {
                     val gameModel = document.toObject(GameModel::class.java)
                     gameModel?.let { model ->
+                        // Check if game has reached max players
+                        if (model.maxPlayers != null && model.players.size >= model.maxPlayers!!) {
+                            binding.joinCode.error = "Game is full"
+                            return@addOnSuccessListener
+                        }
+
                         if (!model.players.contains(userId)) {
                             // Get user's email or display name
                             val userName = FirebaseAuth.getInstance().currentUser?.email ?: "Unknown"

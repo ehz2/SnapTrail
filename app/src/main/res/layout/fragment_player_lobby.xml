@@ -6,6 +6,24 @@
     android:gravity="center"
     android:padding="16dp">
 
+    <!-- Display the trail name -->
+    <TextView
+        android:id="@+id/tvTrailName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Trail Name"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Display the comments -->
+    <TextView
+        android:id="@+id/tvComments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Comments"
+        android:layout_marginBottom="16dp"/>
+
     <!-- Display the joined game code -->
     <TextView
         android:id="@+id/tvGameCode"

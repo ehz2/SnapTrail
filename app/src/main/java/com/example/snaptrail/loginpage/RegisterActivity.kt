@@ -70,6 +70,7 @@ class RegisterActivity : AppCompatActivity() {
                         val user = auth.currentUser
                         user?.let {
                             saveUsernameToFirestore(it.uid, username)
+//                            saveUserStatsToFirestore(it.uid)
                         }
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
@@ -93,7 +94,11 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun saveUsernameToFirestore(uid: String, username: String) {
         val userDoc = firestore.collection("users").document(uid)
-        val userData = mapOf("username" to username)
+        val userData = mapOf("username" to username,
+            "easy" to 0,
+            "medium" to 0,
+            "hard" to 0,
+            "successfulPlacesFound" to 0)
 
         userDoc.set(userData)
             .addOnSuccessListener {
@@ -105,6 +110,22 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "Failed to save username", Toast.LENGTH_SHORT).show()
             }
     }
+//    private fun saveUserStatsToFirestore(uid:String) {
+//        val userDoc = firestore.collection("stats").document(uid)
+//        val userStatsData = mapOf(
+//            "easy" to 0,
+//            "medium" to 0,
+//            "hard" to 0,
+//            "successfulPlacesFound" to 0
+//        )
+//        userDoc.set(userStatsData)
+//            .addOnSuccessListener {
+//                Log.d("xd", "User Stats saved successfully")
+//            }
+//            .addOnFailureListener { exception ->
+//                Log.e("xd", "Failed to save User Stats: ${exception.message}")
+//            }
+//    }
 
     public override fun onStart() {
         super.onStart()
