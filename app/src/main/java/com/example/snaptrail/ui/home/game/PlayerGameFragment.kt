@@ -55,11 +55,14 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
     private var userLocationMarker: Marker? = null
+    private var lastKnownLocation: Location? = null
+    private val circleOverlays = mutableMapOf<String, Circle>()
+    private var hasAdjustedCameraToUserLocation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Restore circle centers if available
+        // Restore circle centers and last known location if available
         savedInstanceState?.let { bundle ->
             val circleCentersList = bundle.getParcelableArrayList<Bundle>("circleCenters")
             circleCentersList?.forEach { item ->
@@ -67,6 +70,16 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
                 val latitude = item.getDouble("latitude")
                 val longitude = item.getDouble("longitude")
                 circleCenters[placeId] = LatLng(latitude, longitude)
+            }
+
+            // Restore last known location
+            val lat = bundle.getDouble("lastKnownLatitude", Double.NaN)
+            val lng = bundle.getDouble("lastKnownLongitude", Double.NaN)
+            if (!lat.isNaN() && !lng.isNaN()) {
+                lastKnownLocation = Location("").apply {
+                    latitude = lat
+                    longitude = lng
+                }
             }
         }
 
@@ -88,7 +101,7 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         locationRequest = LocationRequest.create().apply {
             interval = 5000 // Update interval in milliseconds
             fastestInterval = 2000 // Fastest update interval in milliseconds
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            priority = Priority.PRIORITY_HIGH_ACCURACY
         }
 
         locationCallback = object : LocationCallback() {
@@ -122,6 +135,16 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         gameId = arguments?.getString("gameId") ?: ""
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        // Get last known location
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                lastKnownLocation = location
+                if (::googleMap.isInitialized) {
+                    updateUserLocationOnMap(location)
+                }
+            }
+        }
 
         // Initialize game start time
         gameStartTime = System.currentTimeMillis()
@@ -180,47 +203,87 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         setupMap()
+
+        // Re-add user location marker if necessary
+        if (userLocationMarker == null && lastKnownLocation != null) {
+            updateUserLocationOnMap(lastKnownLocation!!)
+        }
     }
 
     private fun setupMap() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
             return
         }
 
-        googleMap.isMyLocationEnabled = false
+        googleMap.isMyLocationEnabled = false // We'll handle location updates manually
 
-        // Display the locations with circles
+        // Draw circles
+        drawCircles()
+
+        // Adjust camera to include circles and user location
+        adjustCameraToCircles()
+    }
+
+    private fun drawCircles() {
         gameModel?.let { model ->
-            val boundsBuilder = LatLngBounds.Builder()
-
             model.locations.forEach { locationData ->
-                val locationLatLng = LatLng(locationData.latitude, locationData.longitude)
+                // Skip drawing if location is completed
+                if (!completedLocations.contains(locationData.placeId)) {
+                    val locationLatLng = LatLng(locationData.latitude, locationData.longitude)
 
-                // Generate or retrieve the circle center for this location
-                val circleCenter = circleCenters.getOrPut(locationData.placeId) {
-                    generateRandomPointAround(locationLatLng, 300.0)
+                    // Generate or retrieve the circle center for this location
+                    val circleCenter = circleCenters.getOrPut(locationData.placeId) {
+                        generateRandomPointAround(locationLatLng, 300.0)
+                    }
+
+                    val circle = googleMap.addCircle(
+                        CircleOptions()
+                            .center(circleCenter)
+                            .radius(300.0) // 300 meters
+                            .strokeColor(Color.argb(85, 0, 255, 0))
+                            .fillColor(Color.argb(34, 0, 255, 0))
+                    )
+
+                    // Store the circle with placeId as the key
+                    circleOverlays[locationData.placeId] = circle
                 }
-
-                googleMap.addCircle(
-                    CircleOptions()
-                        .center(circleCenter)
-                        .radius(300.0) // 300 meters
-                        .strokeColor(Color.argb(85, 0, 255, 0))
-                        .fillColor(Color.argb(34, 0, 255, 0))
-                )
-
-                // Include the circle bounds
-                boundsBuilder.include(circleCenter)
             }
+        }
+    }
 
-            // Adjust the camera to include all circles
+    private fun adjustCameraToCircles() {
+        val boundsBuilder = LatLngBounds.Builder()
+
+        // Include circle centers
+        circleCenters.values.forEach { circleCenter ->
+            boundsBuilder.include(circleCenter)
+        }
+
+        // Include user's last known location if available
+        lastKnownLocation?.let { location ->
+            val userLatLng = LatLng(location.latitude, location.longitude)
+            boundsBuilder.include(userLatLng)
+        }
+
+        try {
             val bounds = boundsBuilder.build()
             val padding = 100 // Adjust as needed
-            val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
-            googleMap.moveCamera(cameraUpdate)
+
+            // Check if bounds are valid
+            if (bounds.northeast != bounds.southwest) {
+                val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                googleMap.moveCamera(cameraUpdate)
+            } else {
+                // Only one point in bounds
+                val target = LatLng(bounds.northeast.latitude, bounds.northeast.longitude)
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 15f))
+            }
+        } catch (e: Exception) {
+            // Handle exception if bounds cannot be built
+            Log.e("PlayerGameFragment", "Cannot move camera: ${e.message}")
         }
     }
 
@@ -247,19 +310,26 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun updateUserLocationOnMap(location: Location) {
+        lastKnownLocation = location
         val currentLatLng = LatLng(location.latitude, location.longitude)
 
         if (userLocationMarker == null) {
-            // Add a marker for the user's location
+            // Add a marker for the user's location with a custom icon or color
             userLocationMarker = googleMap.addMarker(
                 MarkerOptions()
                     .position(currentLatLng)
                     .title("You")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
         } else {
             // Move the marker to the new location
             userLocationMarker?.position = currentLatLng
+        }
+
+        // Adjust camera to include user location and circles if not already done
+        if (!hasAdjustedCameraToUserLocation) {
+            adjustCameraToCircles()
+            hasAdjustedCameraToUserLocation = true
         }
     }
 
@@ -275,10 +345,13 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
             addLocationEntry(location)
         }
 
-        // Update the map if needed
+        // Redraw circles without clearing the map
         if (::googleMap.isInitialized) {
-            googleMap.clear()
-            setupMap()
+            // Remove existing circles
+            circleOverlays.values.forEach { it.remove() }
+            circleOverlays.clear()
+            // Draw circles again
+            drawCircles()
         }
     }
 
@@ -312,8 +385,10 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
             )
             text = location.name
             setPadding(16, 16, 16, 16)
-            setTextColor(if (completedLocations.contains(location.placeId))
-                Color.GREEN else Color.BLACK)
+            setTextColor(
+                if (completedLocations.contains(location.placeId))
+                    Color.GREEN else Color.BLACK
+            )
             setBackgroundResource(R.drawable.location_entry_background)
         }
 
@@ -392,6 +467,11 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
         // Disable the navigation drawer
         (activity as MainActivity).lockDrawer()
         startLocationUpdates()
+
+        // Re-add user location marker if necessary
+        if (userLocationMarker == null && lastKnownLocation != null) {
+            updateUserLocationOnMap(lastKnownLocation!!)
+        }
     }
 
     override fun onPause() {
@@ -456,6 +536,10 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
                     completedLocations.add(savedLocation.placeId)
                     updatePlayerProgress(savedLocation.placeId, timeTakenMillis)
                     updateLocationEntryColor(savedLocation.placeId)
+
+                    // Remove the circle for this location
+                    circleOverlays[savedLocation.placeId]?.remove()
+                    circleOverlays.remove(savedLocation.placeId)
 
                     if (completedLocations.size == gameModel?.locations?.size) {
                         userId?.let { currentUserId ->
@@ -578,6 +662,12 @@ class PlayerGameFragment : Fragment(), OnMapReadyCallback {
             }
         }
         outState.putParcelableArrayList("circleCenters", ArrayList(circleCentersList))
+
+        // Save last known location
+        lastKnownLocation?.let {
+            outState.putDouble("lastKnownLatitude", it.latitude)
+            outState.putDouble("lastKnownLongitude", it.longitude)
+        }
     }
 
     companion object {
